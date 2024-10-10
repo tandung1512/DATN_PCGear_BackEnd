@@ -1,38 +1,51 @@
 package web.model;
 
-
 import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "Accounts")
+@Table(name = "Accounts") // Define the table name in the database
 public class Account {
     @Id
-    private String id; // Remains String to match varchar(20)
+    private String id;
 
+    @NotBlank(message = "Name is required")
     private String name;
-    private String password; // Consider using a secure way to handle passwords
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
+    private String password;
+
+    @NotBlank(message = "Phone number is required")
     private String phone;
+
+    @Email(message = "Email should be valid")
     private String email;
+
     private String address;
     private String image;
-    private boolean admin; // Should be `true` or `false`
-    private boolean status; // Should be `true` or `false`
-    private Boolean confirm; // Use Boolean object to allow null
-    private String otp; // New field for OTP
+    private boolean admin;
+    private boolean status;
+    private Boolean confirm; // Changed to Boolean to allow null
+    private String otp;
 
     @OneToMany(mappedBy = "user") // Assuming 'user' is the field in Comment
     @JsonIgnore
@@ -52,18 +65,18 @@ public class Account {
 
     @Override
     public String toString() {
-        return "Account{" + 
-               "id='" + id + '\'' + 
-               ", name='" + name + '\'' + 
-               ", password='" + password + '\'' + 
-               ", phone='" + phone + '\'' + 
-               ", email='" + email + '\'' + 
-               ", address='" + address + '\'' + 
-               ", image='" + image + '\'' + 
-               ", admin=" + admin + 
-               ", status=" + status + 
-               ", confirm=" + confirm + 
-               ", otp='" + otp + '\'' + 
+        return "Account{" +
+               "id='" + id + '\'' +
+               ", name='" + name + '\'' +
+               ", password='" + password + '\'' +
+               ", phone='" + phone + '\'' +
+               ", email='" + email + '\'' +
+               ", address='" + address + '\'' +
+               ", image='" + image + '\'' +
+               ", admin=" + admin +
+               ", status=" + status +
+               ", confirm=" + confirm +
+               ", otp='" + otp + '\'' +
                '}';
     }
 }
