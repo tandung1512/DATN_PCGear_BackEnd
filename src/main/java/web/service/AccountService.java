@@ -100,7 +100,7 @@ public class AccountService {
 
         // Tạo tên file với ID ngẫu nhiên
         String fileName = imageFile.getOriginalFilename(); // Lấy tên file gốc
-        Path imagePath = uploadPath.resolve(fileName); // Tạo đường dẫn file
+        Path imagePath = uploadPath.resolve(fileName); // Tạo đường dẫn file 
 
         // Sao chép file từ input stream
         Files.copy(imageFile.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
