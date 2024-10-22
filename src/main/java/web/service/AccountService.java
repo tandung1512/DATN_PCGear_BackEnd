@@ -96,6 +96,7 @@ public class AccountService {
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
+        
 
         // Tạo tên file với ID ngẫu nhiên
         String fileName = imageFile.getOriginalFilename(); // Lấy tên file gốc
