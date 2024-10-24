@@ -10,7 +10,15 @@ import jakarta.validation.Valid;
 import web.model.Account;
 import web.service.AccountService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -22,33 +30,50 @@ public class AccountController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Lấy danh sách tất cả các tài khoản 
+    @Operation(summary = "Get all accounts", description = "Retrieve a list of all registered accounts")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved list",
+                content = { @Content(mediaType = "application/json",
+                schema = @Schema(implementation = Account.class)) }),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping
     public ResponseEntity<List<Account>> getAllAccounts() {
         List<Account> accounts = accountService.findAll();
         return ResponseEntity.ok(accounts);
     }
 
-    // Lấy tài khoản theo ID
+    @Operation(summary = "Get account by ID", description = "Retrieve account details using account ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved account",
+                content = { @Content(mediaType = "application/json",
+                schema = @Schema(implementation = Account.class)) }),
+        @ApiResponse(responseCode = "404", description = "Account not found"),
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<Account> getAccountById(@PathVariable String id) {
+    public ResponseEntity<Account> getAccountById(
+            @Parameter(description = "ID of the account to be retrieved") @PathVariable String id) {
         return accountService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-    // Đăng ký tài khoản người dùng
+
+    @Operation(summary = "Register new account", description = "Register a new user account")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Account registered successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data"),
+    })
     @PostMapping("/register")
     public ResponseEntity<String> register(
-            @RequestParam String id,
-            @RequestParam String name,
-            @RequestParam String password,
-            @RequestParam String phone,
-            @RequestParam String email,
-            @RequestParam String address,
-            @RequestParam("image") MultipartFile image) {
+            @Parameter(description = "ID of the new account") @RequestParam String id,
+            @Parameter(description = "Name of the new account holder") @RequestParam String name,
+            @Parameter(description = "Password of the new account") @RequestParam String password,
+            @Parameter(description = "Phone number of the account holder") @RequestParam String phone,
+            @Parameter(description = "Email of the new account") @RequestParam String email,
+            @Parameter(description = "Address of the account holder") @RequestParam String address,
+            @Parameter(description = "Profile image for the account", required = false) @RequestParam(value = "image", required = false) MultipartFile image) {
 
         try {
-            // Mã hóa mật khẩu trước khi lưu
             String encodedPassword = passwordEncoder.encode(password);
             accountService.registerAccount(id, name, encodedPassword, phone, email, address, image);
             return ResponseEntity.ok("Account registered successfully.");
@@ -56,7 +81,14 @@ public class AccountController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    // Tạo tài khoản mới
+
+    @Operation(summary = "Create new account", description = "Create a new account with detailed fields")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Account created successfully",
+                content = { @Content(mediaType = "application/json",
+                schema = @Schema(implementation = Account.class)) }),
+        @ApiResponse(responseCode = "500", description = "Internal server error"),
+    })
     @PostMapping
     public ResponseEntity<?> createAccount(
             @RequestParam("id") String id,
@@ -71,10 +103,7 @@ public class AccountController {
             @RequestParam(value = "confirm", defaultValue = "true") boolean confirm) {
         
         try {
-            System.out.println("Đang xử lý yêu cầu tạo tài khoản mới...");
-
             String encodedPassword = passwordEncoder.encode(password);
-            
             Account account = new Account();
             account.setId(id);
             account.setName(name);
@@ -86,28 +115,32 @@ public class AccountController {
             account.setStatus(status);
             account.setConfirm(confirm);
 
-            // Kiểm tra và lưu thông tin ảnh
             if (image != null && !image.isEmpty()) {
                 String fileName = image.getOriginalFilename();
                 account.setImage(fileName);
-                // TODO: Lưu file ảnh vào một thư mục trên server hoặc xử lý theo yêu cầu của bạn
+                // TODO: Save the image to a directory on the server
             } else {
                 account.setImage(null);
             }
 
-           Account createdAccount = accountService.save(account);
+            Account createdAccount = accountService.save(account);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdAccount);
         } catch (Exception e) {
-            System.err.println("Lỗi khi tạo tài khoản: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Không thể tạo tài khoản: " + e.getMessage());
+                    .body("Error creating account: " + e.getMessage());
         }
     }
-    
-    // Update
+
+    @Operation(summary = "Update account", description = "Update account details by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Account updated successfully",
+                content = { @Content(mediaType = "application/json",
+                schema = @Schema(implementation = Account.class)) }),
+        @ApiResponse(responseCode = "404", description = "Account not found"),
+    })
     @PutMapping("/{id}")
     public ResponseEntity<?> updateAccount(
-            @PathVariable String id,
+            @Parameter(description = "ID of the account to be updated") @PathVariable String id,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "password", required = false) String password,
             @RequestParam(value = "phone", required = false) String phone,
@@ -118,24 +151,21 @@ public class AccountController {
             @RequestParam(value = "status", required = false) Boolean status) {
 
         try {
-            // Tìm tài khoản theo ID
             Account existingAccount = accountService.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại"));
+                    .orElseThrow(() -> new RuntimeException("Account not found"));
 
-            // Cập nhật thông tin tài khoản nếu các trường không null
             if (name != null) existingAccount.setName(name);
-            if (password != null) existingAccount.setPassword(passwordEncoder.encode(password));;
+            if (password != null) existingAccount.setPassword(passwordEncoder.encode(password));
             if (phone != null) existingAccount.setPhone(phone);
             if (email != null) existingAccount.setEmail(email);
             if (address != null) existingAccount.setAddress(address);
             if (admin != null) existingAccount.setAdmin(admin);
             if (status != null) existingAccount.setStatus(status);
 
-            // Nếu có hình ảnh mới, xử lý việc lưu ảnh
             if (imageFile != null && !imageFile.isEmpty()) {
                 String fileName = imageFile.getOriginalFilename();
-                existingAccount.setImage(fileName); // Cập nhật đường dẫn hình ảnh
-                // TODO: Lưu file ảnh vào một thư mục trên server hoặc xử lý theo yêu cầu của bạn
+                existingAccount.setImage(fileName);
+                // TODO: Save the image to a directory on the server
             }
 
             Account updatedAccount = accountService.save(existingAccount);
@@ -143,22 +173,23 @@ public class AccountController {
             
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage()); // Trả về thông báo khi không tìm thấy tài khoản
+                    .body(e.getMessage());
         } catch (Exception e) {
-            // Xử lý lỗi khác
-            System.err.println("Lỗi khi cập nhật tài khoản: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Đã xảy ra lỗi khi cập nhật tài khoản: " + e.getMessage());
+                    .body("Error updating account: " + e.getMessage());
         }
     }
 
-
-
-
-    // Xóa tài khoản theo ID
+    @Operation(summary = "Delete account by ID", description = "Delete an account using its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Account deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Account not found")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAccount(@PathVariable String id) {
-        if (accountService.findById(id).isPresent()) {
+    public ResponseEntity<Void> deleteAccount(
+            @Parameter(description = "ID of the account to be deleted") @PathVariable String id) {
+        Optional<Account> accountOpt = accountService.findById(id);
+        if (accountOpt.isPresent()) {
             accountService.delete(id);
             return ResponseEntity.noContent().build();
         } else {
