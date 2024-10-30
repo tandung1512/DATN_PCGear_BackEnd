@@ -1,5 +1,5 @@
 package web.service;
- 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,8 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
- 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -25,10 +23,12 @@ public class AccountService {
     @Autowired
     private AccountRepository accountRepository;
 
-    
     @Autowired
     private ServletContext servletContext;
-    
+
+    @Autowired
+    private PasswordEncoder passwordEncoder; // For encoding passwords
+
     public List<Account> findAll() {
         return accountRepository.findAll();
     }
@@ -45,30 +45,25 @@ public class AccountService {
         accountRepository.deleteById(id);
     }
 
-    @Autowired
-    private PasswordEncoder passwordEncoder; // Để mã hóa mật khẩu
-
-    
- // Đăng ký tài khoản mới
+    // Register a new account as a regular user (admin set to false by default)
     public void registerAccount(String id, String name, String password, String phone, String email, String address, MultipartFile imageFile) throws Exception {
 
-        // Kiểm tra nếu ID (tên đăng nhập) đã tồn tại
-    	 Optional<Account> existingAccount = accountRepository.findById(id);
-         if (existingAccount.isPresent()) {
-             throw new Exception("Username (ID) đã được sử dụng");
-         }
-         
-         // Mã hóa mật khẩu trước khi lưu vào cơ sở dữ liệu
-         String encodedPassword = passwordEncoder.encode(password);
+        // Check if ID (username) already exists
+        Optional<Account> existingAccount = accountRepository.findById(id);
+        if (existingAccount.isPresent()) {
+            throw new Exception("Username (ID) has already been used.");
+        }
+        
+        // Encode password before saving to database
+        String encodedPassword = passwordEncoder.encode(password);
 
-
-        // Xử lý lưu ảnh nếu có
+        // Handle image saving if provided
         String imagePath = null;
-        if (!imageFile.isEmpty()) {
-            imagePath = saveImage(imageFile);  // Hàm lưu ảnh
+        if (imageFile != null && !imageFile.isEmpty()) {
+            imagePath = saveImage(imageFile); // Save image
         }
 
-        // Tạo tài khoản mới với các thuộc tính mặc định
+        // Create a new account with default properties
         Account newAccount = Account.builder()
                 .id(id)
                 .name(name)
@@ -77,34 +72,31 @@ public class AccountService {
                 .email(email)
                 .address(address)
                 .image(imagePath)
-                .admin(false)
-                .status(true)
-                .confirm(true)
-                .otp(null)
+                .admin(false) // Set to false to create a regular user account
+                .status(true) // Default to true
+                .confirm(true) // Default to true
+                .otp(null) // Default to null
                 .build();
 
-        accountRepository.save(newAccount);
+        accountRepository.save(newAccount); // Save new account
     }
 
-    
     private String saveImage(MultipartFile imageFile) throws IOException {
-        // Lấy đường dẫn lưu hình ảnh từ servlet context
+        // Get the image save path from servlet context
         String uploadsDir = servletContext.getRealPath("/webapp/files/images/");
 
-        // Tạo thư mục nếu chưa tồn tại
+        // Create directory if it doesn't exist
         Path uploadPath = Paths.get(uploadsDir);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
-        
-        
 
-        // Tạo tên file với ID ngẫu nhiên
-        String fileName = imageFile.getOriginalFilename(); // Lấy tên file gốc
-        Path imagePath = uploadPath.resolve(fileName); // Tạo đường dẫn file 
+        // Create file name using the original file name
+        String fileName = imageFile.getOriginalFilename(); // Get the original file name
+        Path imagePath = uploadPath.resolve(fileName); // Create the file path
 
-        // Sao chép file từ input stream
+        // Copy file from input stream
         Files.copy(imageFile.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
-        return imagePath.toString(); // Trả về đường dẫn
+        return imagePath.toString(); // Return the file path
     }
 }

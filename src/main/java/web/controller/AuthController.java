@@ -12,6 +12,7 @@ import web.model.Account;
 import web.model.LoginRequest;
 import web.model.responses.LoginResponse;
 import web.service.AccountService;
+import web.util.JwtUtil;
 
 import java.util.Optional;
 
@@ -23,37 +24,39 @@ public class AuthController {
     private AccountService accountService;
 
     @Autowired
-    private PasswordEncoder passwordEncoder; // Để so sánh mật khẩu đã mã hóa
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        // Tìm tài khoản theo ID
+        // Tìm kiếm tài khoản theo ID
         Optional<Account> accountOptional = accountService.findById(loginRequest.getId());
 
-        // Kiểm tra nếu tài khoản tồn tại và mật khẩu trùng khớp
+        // Kiểm tra tài khoản tồn tại và mật khẩu đúng
         if (accountOptional.isPresent()) {
             Account account = accountOptional.get();
 
-            // So sánh mật khẩu đã mã hóa với mật khẩu người dùng nhập vào
             if (passwordEncoder.matches(loginRequest.getPassword(), account.getPassword())) {
-                // Trả về thông tin tài khoản đầy đủ nếu đăng nhập thành công
-            	
-            	// tạo token bằng jwt
-            	
-            	// tạo mới loginResponse object
-            	LoginResponse data = new LoginResponse();
-            	data.id= account.getId();
-            	data.name= account.getName();
-            	data.phone= account.getPhone();
-            	data.email=account.getEmail();
-            	data.address = account.getAddress();
-            	data.token= "";
-            	
-                return ResponseEntity.ok(data);
+                // Tạo JWT token khi đăng nhập thành công
+                String token = jwtUtil.generateToken(account.getId());
+
+                // Tạo LoginResponse để trả về thông tin người dùng và token
+                LoginResponse response = new LoginResponse(
+                        account.getId(),
+                        account.getName(),
+                        account.getPhone(),
+                        account.getEmail(),
+                        account.getAddress(),
+                        token
+                );
+
+                return ResponseEntity.ok(response);
             }
         }
 
-        // Trả về lỗi nếu thông tin đăng nhập không chính xác
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Thông tin đăng nhập không chính xác");
+        // Trả về thông báo lỗi nếu tài khoản không tồn tại hoặc mật khẩu không đúng
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid ID or Password");
     }
 }

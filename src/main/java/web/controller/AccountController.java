@@ -98,7 +98,7 @@ public class AccountController {
             @RequestParam("email") String email,
             @RequestParam("address") String address,
             @RequestParam(value = "image", required = false) MultipartFile image,
-            @RequestParam("admin") boolean admin,
+            @RequestParam("admin") boolean admin, // Keeping it as boolean
             @RequestParam(value = "status", defaultValue = "true") boolean status,
             @RequestParam(value = "confirm", defaultValue = "true") boolean confirm) {
         
@@ -111,7 +111,7 @@ public class AccountController {
             account.setPhone(phone);
             account.setEmail(email);
             account.setAddress(address);
-            account.setAdmin(admin);
+            account.setAdmin(admin); // Using the boolean value directly
             account.setStatus(status);
             account.setConfirm(confirm);
 
@@ -147,7 +147,7 @@ public class AccountController {
             @RequestParam(value = "email", required = false) String email,
             @RequestParam(value = "address", required = false) String address,
             @RequestParam(value = "image", required = false) MultipartFile imageFile,
-            @RequestParam(value = "admin", required = false) Boolean admin,
+            @RequestParam(value = "admin", required = false) Boolean admin, // Keeping it as Boolean
             @RequestParam(value = "status", required = false) Boolean status) {
 
         try {
@@ -159,7 +159,7 @@ public class AccountController {
             if (phone != null) existingAccount.setPhone(phone);
             if (email != null) existingAccount.setEmail(email);
             if (address != null) existingAccount.setAddress(address);
-            if (admin != null) existingAccount.setAdmin(admin);
+            if (admin != null) existingAccount.setAdmin(admin); // Use the Boolean value directly
             if (status != null) existingAccount.setStatus(status);
 
             if (imageFile != null && !imageFile.isEmpty()) {

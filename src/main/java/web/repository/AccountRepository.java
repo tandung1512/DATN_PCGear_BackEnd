@@ -18,5 +18,6 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     // Example: Check if a user exists by ID
     boolean existsById(String id);
     
+    // Ensure this method is available for ID searches
     Optional<Account> findById(String id);
 }
