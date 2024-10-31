@@ -17,36 +17,43 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Trả về danh sách quyền dựa trên vai trò của tài khoản
         return List.of(new SimpleGrantedAuthority(account.isAdmin() ? "ROLE_ADMIN" : "ROLE_USER"));
     }
 
     @Override
     public String getPassword() {
+        // Trả về mật khẩu của tài khoản
         return account.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return account.getId(); // Using account ID
+        // Sử dụng ID tài khoản làm tên đăng nhập
+        return account.getId(); 
     }
 
     @Override
     public boolean isAccountNonExpired() {
+        // Có thể được điều chỉnh để kiểm tra thời gian hết hạn tài khoản nếu cần
         return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
+        // Có thể được điều chỉnh để kiểm tra xem tài khoản có bị khóa không
         return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
+        // Có thể được điều chỉnh để kiểm tra xem thông tin xác thực có hết hạn không
         return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return account.isStatus(); // Return account status
+        // Trả về trạng thái của tài khoản
+        return account.isStatus(); 
     }
 }

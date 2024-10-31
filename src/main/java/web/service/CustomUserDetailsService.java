@@ -19,7 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     // This method is required by UserDetailsService
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Here, we assume that username can be an ID
+        // Find account by username (assuming username is the same as ID)
         return loadUserById(username); // Directly call your custom load method
     }
 
