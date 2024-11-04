@@ -17,6 +17,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,7 +68,7 @@ public class AccountController {
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
     })
     @PostMapping("/register")
-    public ResponseEntity<String> register(
+    public ResponseEntity<Map<String, String>> register(
             @Parameter(description = "ID of the new account") @RequestParam String id,
             @Parameter(description = "Name of the new account holder") @RequestParam String name,
             @Parameter(description = "Password of the new account") @RequestParam String password,
@@ -75,12 +77,25 @@ public class AccountController {
             @Parameter(description = "Address of the account holder") @RequestParam String address,
             @Parameter(description = "Profile image for the account", required = false) @RequestParam(value = "image", required = false) MultipartFile image) {
 
+
+        Map<String, String> response = new HashMap<>();
+//        try {
+//            String encodedPassword = passwordEncoder.encode(password);
+//            accountService.registerAccount(id, name, encodedPassword, phone, email, address, image);
+//            return ResponseEntity.ok("Account registered successfully.");
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+        
         try {
             String encodedPassword = passwordEncoder.encode(password);
             accountService.registerAccount(id, name, encodedPassword, phone, email, address, image);
-            return ResponseEntity.ok("Account registered successfully.");
+            response.put("message", "Account registered successfully.");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        	response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+
         }
     }
 
