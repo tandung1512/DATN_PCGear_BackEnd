@@ -7,37 +7,51 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "products")
 public class Product {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	private String id;
 
-    private String name;
-    private int quantity;
-    private double price;
-    private String description;
-    private String status;
-    private String image1;
-    private String image2;
+	private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+	private int quantity;
 
-    @OneToMany(mappedBy = "product")
-    private List<Comment> comments;
+	private float price;
 
-    @OneToMany(mappedBy = "product")
-    private List<Cart> carts;
+	private String description;
 
-    @OneToMany(mappedBy = "product")
-    private List<DetailedInvoice> detailedInvoices;
+	private boolean status;
 
-    @OneToMany(mappedBy = "product")
-    private List<ProductDistinctive> productDistinctives;
+	private String image1;
+
+	private String image2;
+
+	@ManyToOne
+	@JoinColumn(name = "category_id")
+	private Category category;
+
+	@OneToMany(mappedBy = "product")
+	@JsonIgnore
+	private List<Comment> comments;
+
+	@OneToMany(mappedBy = "product")
+	@JsonIgnore
+	private List<DetailedInvoice> detailedInvoices;
+
+	@OneToMany(mappedBy = "product")
+	@JsonIgnore
+	private List<Cart> carts;
+
+	@OneToMany(mappedBy = "product")
+	@JsonIgnore
+	private List<ProductDistinctive> productDistinctives;
+
+	// constructors, getters, and setters
 }

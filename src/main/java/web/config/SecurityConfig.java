@@ -18,6 +18,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/api/**").permitAll() 
                 .requestMatchers("/**").permitAll() 
+                .requestMatchers("/pcgearhub/**").permitAll() 
                 .anyRequest().authenticated() // Other requests require authentication
             );
 
