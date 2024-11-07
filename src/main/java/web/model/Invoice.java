@@ -16,7 +16,7 @@ import java.util.List;
 public class Invoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     private String orderDate;
     private String address;
