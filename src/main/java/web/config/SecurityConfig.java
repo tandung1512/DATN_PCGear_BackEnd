@@ -50,8 +50,9 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeRequests(auth -> auth
-                .requestMatchers("/api/auth/**","/api/accounts/register", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/accounts/**").hasRole("ADMIN") 
+                .requestMatchers("/api/auth/**","/api/accounts/register","/api/accounts/profile", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/api/accounts/**", "/api/suppliers/**","/api/brands/**","/api/stock-receipts/**").hasRole("ADMIN")
+                
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

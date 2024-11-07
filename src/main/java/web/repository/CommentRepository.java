@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import web.model.Comment;
 
 @Repository
-public interface CommentRepository extends JpaRepository<Comment, Long> {
+public interface CommentRepository extends JpaRepository<Comment, Integer> {
     // You can define custom query methods here if needed
 }

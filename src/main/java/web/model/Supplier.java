@@ -1,6 +1,5 @@
 package web.model;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,9 +13,10 @@ import java.util.List;
 @Entity
 @Table(name = "suppliers")
 public class Supplier {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;  // id là kiểu String vì trong DB là VARCHAR(20)
 
     private String name;
     private String phoneNumber;
@@ -26,4 +26,3 @@ public class Supplier {
     @OneToMany(mappedBy = "supplier")
     private List<StockReceipt> stockReceipts;
 }
-

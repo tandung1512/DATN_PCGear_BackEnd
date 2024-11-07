@@ -14,9 +14,10 @@ import java.util.List;
 @Entity
 @Table(name = "categories")
 public class Category {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	 @Id
+	    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	    private String id;  // id là kiểu String vì trong DB là VARCHAR(20)
+
 
     private String name;
     private String description;

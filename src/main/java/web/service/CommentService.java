@@ -24,7 +24,7 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
-    public void delete(Long id) {
+    public void delete(Integer id) {
         commentRepository.deleteById(id);
     }
 
