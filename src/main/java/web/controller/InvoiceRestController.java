@@ -30,7 +30,7 @@ import web.repository.InvoiceRepository;
 
 @RestController
 @CrossOrigin("*")
-@RequestMapping("/pcgearhub")
+@RequestMapping("/api")
 public class InvoiceRestController extends HttpServlet {
 	@Autowired
 	InvoiceRepository dao;
@@ -38,13 +38,13 @@ public class InvoiceRestController extends HttpServlet {
 	@Autowired
 	OrderService odersv;
 
-	@GetMapping("/rest/invoices")
+	@GetMapping("/invoices")
 	public ResponseEntity<List<Invoice>> getAll(Model model) {
 		return ResponseEntity.ok(dao.findAll());
 	}
 
 //Thống kê
-	@GetMapping("/rest/invoices/sales/{year}")
+	@GetMapping("/invoices/sales/{year}")
 	public ResponseEntity<List<MonthlySalesStatistics>> getSales(@PathVariable("year") int year) {
 		List<MonthlySalesStatistics> sales = dao.getMonthlySalesStatistics(year);
 		return ResponseEntity.ok(sales);
@@ -52,26 +52,26 @@ public class InvoiceRestController extends HttpServlet {
 
 
 	//Thống kê
-	@GetMapping("/rest/invoices/bars/{year}")
+	@GetMapping("/invoices/bars/{year}")
 	public ResponseEntity<List<MonthlySalesStatistics>> getBars(@PathVariable("year") int year) {
 		List<MonthlySalesStatistics> bars = dao.getMonthlySalesStatisticsbras(year);
 		return ResponseEntity.ok(bars);
 	}
 
 //Láy ra số năm
-	@GetMapping("/rest/invoices/year")
+	@GetMapping("/invoices/year")
 	public ResponseEntity<List<Integer>> getSales() {
 		List<Integer> allYear = dao.findAllDistinctYears();
 		return ResponseEntity.ok(allYear);
 	}
 
-	@GetMapping("/rest/invoices/{keyword}")
+	@GetMapping("/invoices/{keyword}")
 	public ResponseEntity<List<Invoice>> getInvoicesByKeyword(@PathVariable("keyword") String keyword) {
 		List<Invoice> invoices = dao.findByStatusContainingIgnoreCase(keyword);
 		return ResponseEntity.ok(invoices);
 	}
 
-	@GetMapping("/rest/invoice/{id}")
+	@GetMapping("/invoice/{id}")
 	public ResponseEntity<Invoice> getOne(@PathVariable("id") String id) {
 		// check xem id cs tồn tại trong cơ sở dữ liệu hay không trả về true or false
 		if (!dao.existsById(id)) {
@@ -81,7 +81,7 @@ public class InvoiceRestController extends HttpServlet {
 		return ResponseEntity.ok(dao.findById(id).get());
 	}
 
-	@PostMapping("/rest/invoice")
+	@PostMapping("/invoice")
 	// đưa dữ liệu consumer lên rest API @requesstBody
 	public ResponseEntity<Invoice> post(@RequestBody Invoice invoice) {
 		if (dao.existsById(invoice.getId())) {
@@ -91,7 +91,7 @@ public class InvoiceRestController extends HttpServlet {
 		return ResponseEntity.ok(invoice);
 	}
 
-	@PutMapping("/rest/invoice/{id}")
+	@PutMapping("/invoice/{id}")
 	public ResponseEntity<Invoice> put(@PathVariable("id") String id, @RequestBody Invoice invoice) {
 		if (!dao.existsById(id /* invoice.getId() */)) {
 			return ResponseEntity.notFound().build();
@@ -100,7 +100,7 @@ public class InvoiceRestController extends HttpServlet {
 		return ResponseEntity.ok(invoice);
 	}
 
-	@DeleteMapping("/rest/invoice/{id}")
+	@DeleteMapping("/invoice/{id}")
 	public ResponseEntity<Void> delete(@PathVariable("id") String id) {
 		if (!dao.existsById(id)) {
 			return ResponseEntity.notFound().build();
@@ -109,12 +109,12 @@ public class InvoiceRestController extends HttpServlet {
 		return ResponseEntity.ok().build();
 	}
 
-	@PostMapping("/rest/orders")
+	@PostMapping("/orders")
 	public Invoice create(@RequestBody JsonNode orderData) {
 		return odersv.create(orderData);
 	}
 
-	@GetMapping("/rest/ordered-list/details/{id}")
+	@GetMapping("/ordered-list/details/{id}")
 	public ResponseEntity<Map<String, Object>> getOrderDetails(@PathVariable("id") String id) {
 		Invoice order = odersv.findById(id);
 
@@ -128,7 +128,7 @@ public class InvoiceRestController extends HttpServlet {
 		return ResponseEntity.ok(response);
 	}
 
-	@PutMapping("/rest/ordered-list/details/{id}")
+	@PutMapping("/ordered-list/details/{id}")
 	public ResponseEntity<String> cancelOrder(@PathVariable("id") String id) {
 		Invoice order = odersv.findById(id);
 
@@ -150,14 +150,14 @@ public class InvoiceRestController extends HttpServlet {
 		return ResponseEntity.ok("Order cancelled successfully.");
 	}
 
-	@GetMapping("/rest/order-list/pending")
+	@GetMapping("/order-list/pending")
 	public List<Invoice> getOrderedList(Model model, HttpServletRequest request) {
 		String username = request.getRemoteUser();
 		List<Invoice> orders = odersv.findByUsernameStatusPending(username);
 		return orders;
 	}
 
-	@GetMapping("/rest/order-list/delivery")
+	@GetMapping("/order-list/delivery")
 	public List<Invoice> getOrderedListdelivery(Model model) {
 	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 	    String username = authentication.getName();
@@ -165,14 +165,14 @@ public class InvoiceRestController extends HttpServlet {
 	    return orders;
 	}
 
-	@GetMapping("/rest/order-list/complete")
+	@GetMapping("/order-list/complete")
 	public List<Invoice> getOrderedListComplete(Model model, HttpServletRequest request) {
 		String username = request.getRemoteUser();
 		List<Invoice> orders = odersv.findByUsernameStatusComplete(username);
 		return orders;
 	}
 
-	@GetMapping("/rest/order-list/cancelled")
+	@GetMapping("/order-list/cancelled")
 	public List<Invoice> getOrderedListCacelled(Model model, HttpServletRequest request) {
 		String username = request.getRemoteUser();
 		List<Invoice> orders = odersv.findByUsernameStatusCancelled(username);

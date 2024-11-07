@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -18,7 +19,7 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
-    private String orderDate;
+    private Date orderDate;
     private String address;
     private String status;
     private String node;
@@ -29,4 +30,22 @@ public class Invoice {
 
     @OneToMany(mappedBy = "invoice")
     private List<DetailedInvoice> detailedInvoices;
+    public String getStatusName() {
+		String statusName = "";
+		switch (status) {
+		case "pending":
+			statusName = "Đang xác nhận";
+			break;
+		case "cancelled":
+			statusName = "Đã hủy";
+			break;
+		case "delivery":
+			statusName = "Đang vận chuyển";
+			break;
+		case "complete":
+			statusName = "Đã giao thành công";
+			break;
+		}
+		return statusName;
+	}
 }

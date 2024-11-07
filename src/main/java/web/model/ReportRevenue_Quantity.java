@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReportRevenue_Quantity {
-    @Id
+    
     private double totalRevenue;
 	private long totalQuantity;
 	
