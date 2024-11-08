@@ -20,22 +20,23 @@ public class SupplierController {
     @Autowired
     private SupplierService supplierService;
 
-    @Operation(summary = "Get all suppliers")
+    // Get all suppliers
+    @Operation(summary = "Get all suppliers", description = "Lấy danh sách tất cả các nhà cung cấp")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved suppliers"),
-        @ApiResponse(responseCode = "204", description = "No content found"),
+        @ApiResponse(responseCode = "204", description = "No suppliers found"),
         @ApiResponse(responseCode = "500", description = "Server error")
     })
     @GetMapping
     public ResponseEntity<List<Supplier>> getAllSuppliers() {
         List<Supplier> suppliers = supplierService.getAllSuppliers();
-        if (suppliers.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(suppliers);
-        }
-        return ResponseEntity.ok(suppliers);
+        return suppliers.isEmpty() 
+                ? ResponseEntity.status(HttpStatus.NO_CONTENT).body(suppliers)
+                : ResponseEntity.ok(suppliers);
     }
 
-    @Operation(summary = "Get supplier by id")
+    // Get supplier by ID
+    @Operation(summary = "Get supplier by ID", description = "Lấy thông tin của nhà cung cấp dựa trên ID")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved supplier"),
         @ApiResponse(responseCode = "404", description = "Supplier not found"),
@@ -51,7 +52,8 @@ public class SupplierController {
         }
     }
 
-    @Operation(summary = "Add a new supplier")
+    // Add new supplier
+    @Operation(summary = "Add a new supplier", description = "Thêm mới nhà cung cấp vào hệ thống")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Supplier added successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid supplier data"),
@@ -61,35 +63,35 @@ public class SupplierController {
     @PostMapping("/add")
     public ResponseEntity<?> addSupplier(@RequestBody Supplier supplier) {
         try {
-            // Kiểm tra tính hợp lệ của các trường
-            if (supplier.getId() == null || supplier.getId().trim().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new SupplierErrorResponse("Supplier ID is required."));
-            }
-
-            if (supplier.getName() == null || supplier.getName().trim().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new SupplierErrorResponse("Supplier name is required."));
-            }
-
-          
-
-            // Lưu Supplier vào cơ sở dữ liệu
             Supplier addedSupplier = supplierService.addSupplier(supplier);
             return ResponseEntity.status(HttpStatus.CREATED).body(addedSupplier);
-
         } catch (ResponseStatusException e) {
-            return ResponseEntity.status(e.getStatusCode())
-                    .body(new SupplierErrorResponse(e.getReason()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new SupplierErrorResponse("An error occurred while adding the supplier: " + e.getMessage()));
+            return ResponseEntity.status(e.getStatusCode()).body(new SupplierErrorResponse(e.getReason()));
         }
     }
 
-    @Operation(summary = "Delete a supplier by id")
+    // Update supplier by ID
+    @Operation(summary = "Update supplier by ID", description = "Cập nhật thông tin của nhà cung cấp dựa trên ID")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully deleted supplier"),
+        @ApiResponse(responseCode = "200", description = "Supplier updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Supplier not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid supplier data"),
+        @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateSupplierById(@PathVariable String id, @RequestBody Supplier supplier) {
+        try {
+            Supplier updatedSupplier = supplierService.updateSupplierById(id, supplier);
+            return ResponseEntity.ok(updatedSupplier);
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(new SupplierErrorResponse(e.getReason()));
+        }
+    }
+
+    // Delete supplier by ID
+    @Operation(summary = "Delete supplier by ID", description = "Xóa nhà cung cấp khỏi hệ thống dựa trên ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Supplier deleted successfully"),
         @ApiResponse(responseCode = "404", description = "Supplier not found"),
         @ApiResponse(responseCode = "500", description = "Server error")
     })
@@ -100,13 +102,10 @@ public class SupplierController {
             return ResponseEntity.ok("Supplier deleted successfully");
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new SupplierErrorResponse(e.getReason()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new SupplierErrorResponse("An error occurred while deleting the supplier: " + e.getMessage()));
         }
     }
 
-    // Error response class
+    // Error response class for handling errors
     public static class SupplierErrorResponse {
         private String message;
 
