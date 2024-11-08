@@ -14,7 +14,7 @@ import java.util.List;
 @Table(name = "products")
 public class Product {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	
 	private String id; // id là kiểu String vì trong DB là VARCHAR(20)
 
 	private String name;
