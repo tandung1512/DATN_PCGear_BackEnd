@@ -1,6 +1,5 @@
 package web.model;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,14 +13,13 @@ import java.util.List;
 @Entity
 @Table(name = "categories")
 public class Category {
-	 @Id
-	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    private String id;  // id là kiểu String vì trong DB là VARCHAR(20)
+	@Id
 
+	private String id; // id là kiểu String vì trong DB là VARCHAR(20)
 
-    private String name;
-    private String description;
+	private String name;
+	private String description;
 
-    @OneToMany(mappedBy = "category")
-    private List<Product> products;
+	@OneToMany(mappedBy = "category")
+	private List<Product> products;
 }
