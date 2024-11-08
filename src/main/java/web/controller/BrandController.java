@@ -67,6 +67,24 @@ public class BrandController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while adding the brand: " + e.getMessage());
         }
     }
+    
+    @Operation(summary = "Update a brand by id")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Brand updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Brand not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid data provided"),
+        @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateBrandById(@PathVariable String id, @RequestBody Brand updatedBrand) {
+        try {
+            Brand brand = brandService.updateBrandById(id, updatedBrand);
+            return ResponseEntity.ok(brand); // Trả về 200 với brand đã cập nhật
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(new BrandErrorResponse(e.getReason()));
+        }
+    }
+
 
     @Operation(summary = "Delete a brand by id")
     @ApiResponses(value = {

@@ -51,6 +51,29 @@ public class BrandService {
         // Nếu các thông tin hợp lệ, lưu vào cơ sở dữ liệu
         return brandRepository.save(brand);
     }
+    
+    // Cập nhật thương hiệu theo ID
+    public Brand updateBrandById(String id, Brand updatedBrand) {
+        Brand existingBrand = brandRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Brand not found with ID: " + id));
+
+        // Cập nhật các trường từ updatedBrand
+        if (updatedBrand.getName() != null) {
+            existingBrand.setName(updatedBrand.getName());
+        }
+        if (updatedBrand.getPhoneNumber() != null) {
+            existingBrand.setPhoneNumber(updatedBrand.getPhoneNumber());
+        }
+        if (updatedBrand.getEmail() != null) {
+            existingBrand.setEmail(updatedBrand.getEmail());
+        }
+        if (updatedBrand.getAddress() != null) {
+            existingBrand.setAddress(updatedBrand.getAddress());
+        }
+
+        return brandRepository.save(existingBrand);
+    }
+
 
     // Xóa thương hiệu theo ID
     public void deleteBrand(String id) {
