@@ -79,7 +79,7 @@ public class BrandController {
     public ResponseEntity<?> updateBrandById(@PathVariable String id, @RequestBody Brand updatedBrand) {
         try {
             Brand brand = brandService.updateBrandById(id, updatedBrand);
-            return ResponseEntity.ok(brand); // Trả về 200 với brand đã cập nhật
+            return ResponseEntity.ok(brand); 
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new BrandErrorResponse(e.getReason()));
         }
