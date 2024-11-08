@@ -64,6 +64,7 @@ public class SupplierService {
         return supplierRepository.save(existingSupplier);
     }
 
+    
     // Xóa nhà cung cấp theo ID
     public void deleteSupplier(String id) {
         if (!supplierRepository.existsById(id)) {
