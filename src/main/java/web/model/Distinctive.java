@@ -16,7 +16,7 @@ import java.util.List;
 @Table(name = "distinctives")
 public class Distinctive {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    
     private String id;
 
     private String name;
