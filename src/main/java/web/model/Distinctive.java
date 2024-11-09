@@ -21,7 +21,7 @@ public class Distinctive {
 
     private String name;
 
-    @OneToMany(mappedBy = "distinctive")
-    private List<ProductDistinctive> productDistinctives;
+//    @OneToMany(mappedBy = "distinctive")
+//    private List<ProductDistinctive> productDistinctives;
 }
 

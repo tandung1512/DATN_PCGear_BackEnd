@@ -57,8 +57,7 @@ public class DistinctiveService {
 
         // Cập nhật các trường
         existingDistinctive.setName(updatedDistinctive.getName());
-        existingDistinctive.setProductDistinctives(updatedDistinctive.getProductDistinctives());
-
+     
         // Lưu thay đổi vào cơ sở dữ liệu
         return distinctiveRepository.save(existingDistinctive);
     }

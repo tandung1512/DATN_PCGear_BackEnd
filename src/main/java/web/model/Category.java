@@ -7,6 +7,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,7 +24,9 @@ public class Category {
 
 	private String name;
 	private String description;
-
+	
+	@JsonManagedReference
 	@OneToMany(mappedBy = "category")
+	
 	private List<Product> products;
 }
