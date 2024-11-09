@@ -1,5 +1,4 @@
 package web.model;
- 
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -14,11 +13,11 @@ import lombok.NoArgsConstructor;
 public class StockReceipt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id;  // id là kiểu Long vì trong DB là INT
 
     private int quantity;
     private double price;
-    private String orderDate;
+    private String orderDate;  // orderDate là VARCHAR trong DB
 
     @ManyToOne
     @JoinColumn(name = "product_id")

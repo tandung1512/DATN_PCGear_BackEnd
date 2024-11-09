@@ -16,12 +16,12 @@ import java.util.List;
 @Table(name = "distinctives")
 public class Distinctive {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    
+    private String id;
 
     private String name;
 
-    @OneToMany(mappedBy = "distinctive")
-    private List<ProductDistinctive> productDistinctives;
+//    @OneToMany(mappedBy = "distinctive")
+//    private List<ProductDistinctive> productDistinctives;
 }
 

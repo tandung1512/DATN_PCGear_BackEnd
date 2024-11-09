@@ -3,6 +3,8 @@ package web.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +19,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.Map;
+import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,7 +71,7 @@ public class AccountController {
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
     })
     @PostMapping("/register")
-    public ResponseEntity<String> register(
+    public ResponseEntity<Map<String, String>> register(
             @Parameter(description = "ID of the new account") @RequestParam String id,
             @Parameter(description = "Name of the new account holder") @RequestParam String name,
             @Parameter(description = "Password of the new account") @RequestParam String password,
@@ -75,12 +80,25 @@ public class AccountController {
             @Parameter(description = "Address of the account holder") @RequestParam String address,
             @Parameter(description = "Profile image for the account", required = false) @RequestParam(value = "image", required = false) MultipartFile image) {
 
+
+        Map<String, String> response = new HashMap<>();
+//        try {
+//            String encodedPassword = passwordEncoder.encode(password);
+//            accountService.registerAccount(id, name, encodedPassword, phone, email, address, image);
+//            return ResponseEntity.ok("Account registered successfully.");
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+        
         try {
             String encodedPassword = passwordEncoder.encode(password);
             accountService.registerAccount(id, name, encodedPassword, phone, email, address, image);
-            return ResponseEntity.ok("Account registered successfully.");
+            response.put("message", "Account registered successfully.");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        	response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+
         }
     }
 
@@ -179,6 +197,37 @@ public class AccountController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error updating account: " + e.getMessage());
+        }
+    }
+    
+    @Operation(summary = "Get logged-in user profile", description = "Retrieve details of the currently logged-in user.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved user profile",
+                content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Account.class)) }),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - User is not logged in"),
+        @ApiResponse(responseCode = "404", description = "Profile not found")
+    })
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(Principal principal) {
+        try {
+            // Obtain the authenticated user's information, typically through the SecurityContexts
+            if (principal == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
+            }
+
+            String userId = principal.getName(); // Assuming the user ID is the principal (username)
+
+            // Fetch account details using the accountService
+            Optional<Account> accountOpt = accountService.findById(userId);
+            if (accountOpt.isPresent()) {
+                return ResponseEntity.ok(accountOpt.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Profile not found");
+            }
+        } catch (Exception e) {
+            // Log the exception message for debugging (optional)
+            System.err.println("Error fetching user profile: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while fetching the profile");
         }
     }
 

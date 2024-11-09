@@ -1,6 +1,5 @@
 package web.model;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,8 +14,8 @@ import java.util.List;
 @Table(name = "brands")
 public class Brand {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    
+    private String id;  // id là kiểu String vì trong DB là VARCHAR(20)
 
     private String name;
     private String phoneNumber;
