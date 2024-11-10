@@ -42,7 +42,7 @@ public class CartService {
             existingCart.setQuantity(updatedCart.getQuantity());
             existingCart.setOrderDate(updatedCart.getOrderDate());
             existingCart.setStatus(updatedCart.getStatus());
-            existingCart.setProduct(updatedCart.getProduct());
+//            existingCart.setProduct(updatedCart.getProduct());
             existingCart.setUser(updatedCart.getUser());
             return cartRepository.save(existingCart);
         } else {

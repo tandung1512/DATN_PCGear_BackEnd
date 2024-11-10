@@ -10,18 +10,15 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-
-
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "products")
 public class Product {
+
 	@Id
-	
-	private String id; // id là kiểu String vì trong DB là VARCHAR(20)
+	private String id; // ID là kiểu String vì trong DB là VARCHAR(20)
 
 	private String name;
 	private int quantity;
@@ -31,24 +28,32 @@ public class Product {
 	private String image1;
 	private String image2;
 
-	@JsonBackReference
+	@JsonBackReference("product-category") // Unique name for Category reference
 	@ManyToOne
-	@JoinColumn(name = "category_id")
+	@JoinColumn(name = "category_id", nullable = true)
 	private Category category;
 
-//	@OneToMany(mappedBy = "product")
-//	private List<Comment> comments;
-//
-//	@OneToMany(mappedBy = "product")
-//	private List<Cart> carts;
-//
-//	@OneToMany(mappedBy = "product")
-//	private List<DetailedInvoice> detailedInvoices;
-	
-	@JsonManagedReference
-	@OneToMany(mappedBy = "product")
-	
-	private List<ProductDistinctive> productDistinctives;
-	
-	
+    // Quan hệ ManyToMany với Distinctive
+    @JsonManagedReference("product-distinctives") // Unique name for Product-Distinctives reference
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+        name = "product_distinctives", // Tên bảng liên kết
+        joinColumns = @JoinColumn(name = "product_id"), // Cột tham chiếu từ bảng products
+        inverseJoinColumns = @JoinColumn(name = "distinctive_id") // Cột tham chiếu từ bảng distinctives
+    )
+    private List<Distinctive> distinctives; // Quan hệ với Distinctive
+
+    // Constructor with images and category
+
+	// Các quan hệ đã bị comment nhưng vẫn giữ lại trong trường hợp cần sử dụng sau
+	// này
+
+	// @OneToMany(mappedBy = "product")
+	// private List<Comment> comments;
+
+	// @OneToMany(mappedBy = "product")
+	// private List<Cart> carts;
+
+	// @OneToMany(mappedBy = "product")
+	// private List<DetailedInvoice> detailedInvoices;
 }

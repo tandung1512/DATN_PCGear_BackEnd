@@ -7,10 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
-
 
 @Data
 @AllArgsConstructor
@@ -18,15 +15,14 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Entity
 @Table(name = "categories")
 public class Category {
-	@Id
+    
+    @Id
+    private String id; // ID là kiểu String vì trong DB là VARCHAR(20)
 
-	private String id; // id là kiểu String vì trong DB là VARCHAR(20)
+    private String name;
+    private String description;
 
-	private String name;
-	private String description;
-	
-	@JsonManagedReference
-	@OneToMany(mappedBy = "category")
-	
-	private List<Product> products;
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference("product-category") // Sử dụng JsonManagedReference để tuần tự hóa danh sách products
+    private List<Product> products;
 }

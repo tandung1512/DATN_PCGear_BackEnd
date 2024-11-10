@@ -27,6 +27,15 @@ public class DistinctiveService {
                         "Distinctive with ID " + id + " not found"));
     }
 
+    // This method retrieves all distinctives based on a list of IDs
+    public List<Distinctive> getDistinctivesByIds(List<String> ids) {
+        List<Distinctive> distinctives = distinctiveRepository.findAllById(ids);
+        if (distinctives.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, 
+                    "No distinctives found for the given IDs");
+        }
+        return distinctives;
+    }
     // Thêm mới distinctive
     public Distinctive addDistinctive(Distinctive distinctive) {
         // Kiểm tra nếu ID là null hoặc rỗng

@@ -25,8 +25,8 @@ public class Cart {
     @JoinColumn(name = "user_id")
     private Account user;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
-    
+//    @ManyToOne
+//    @JoinColumn(name = "product_id")
+//    private Product product;
+//    
 }

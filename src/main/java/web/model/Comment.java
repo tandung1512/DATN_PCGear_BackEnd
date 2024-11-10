@@ -24,7 +24,7 @@ public class Comment {
     private Account user;  // Ensure this matches with your Account class association
 
     
-    @ManyToOne
-    private Product product;
+//    @ManyToOne
+//    private Product product;
     // Add other fields as necessary
 }

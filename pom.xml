@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.4</version>
-        <relativePath /> <!-- lookup parent from repository -->
-    </parent>
-=======
 <project xmlns="https://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
@@ -20,7 +9,7 @@
 		<version>3.3.4</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
->>>>>>> 9638a65e4d476965d080b899b85dc8479a6e1999
+
 
 	<groupId>web</groupId>
 	<artifactId>DATN_PCGear_BackEnd</artifactId>

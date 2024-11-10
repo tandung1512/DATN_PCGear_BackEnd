@@ -10,5 +10,7 @@ public interface ProductDistinctiveRepository extends JpaRepository<ProductDisti
 
     List<ProductDistinctive> findByProductId(String productId);
     
+    void deleteByProductId(String productId);
+    
     List<ProductDistinctive> findByDistinctiveId(String distinctiveId);
 }
