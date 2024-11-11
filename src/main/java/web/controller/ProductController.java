@@ -175,7 +175,7 @@ public class ProductController {
         }
     }
     
-    // Xóa sản phẩm và các liên kết trong bảng products_distinctives
+ // Xóa sản phẩm và các liên kết trong bảng products_distinctives
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProduct(@PathVariable String id) {
         try {
@@ -185,10 +185,12 @@ public class ProductController {
                 return ResponseEntity.status(404).body("Product not found");
             }
 
-            // Bắt đầu xóa các bản ghi liên kết trong bảng products_distinctives
-            productDistinctiveRepository.deleteByProductId(id);
+            // Lấy sản phẩm
+            Product product = productOptional.get();
 
-            // Tiến hành xóa sản phẩm
+          
+
+            // Xóa sản phẩm
             productRepository.deleteById(id);
 
             return ResponseEntity.ok("Product and related records deleted successfully");
@@ -196,6 +198,8 @@ public class ProductController {
             return ResponseEntity.status(500).body("Error deleting product: " + e.getMessage());
         }
     }
+
+
 
     // Error response class for Product
     public static class ProductErrorResponse {
