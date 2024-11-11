@@ -18,6 +18,8 @@ public class ProductDistinctive {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    
 
     // Use unique @JsonBackReference name for Product relationship
     @JsonBackReference("product-productDistinctives")
@@ -30,4 +32,10 @@ public class ProductDistinctive {
     @ManyToOne
     @JoinColumn(name = "distinctive_id", nullable = true)
     private Distinctive distinctive;
+    
+    public ProductDistinctive(Product product, Distinctive distinctive) {
+        this.product = product;
+        this.distinctive = distinctive;
+    }
+
 }

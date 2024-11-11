@@ -18,6 +18,7 @@ import web.service.*;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
@@ -71,7 +72,7 @@ public class ProductController {
         }
     }
 
-    // Add a new product
+ // Add a new product
     @Operation(summary = "Add a new product")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Product added successfully"),
@@ -107,6 +108,11 @@ public class ProductController {
 
         // Get Distinctives by IDs
         List<Distinctive> productDistinctives = distinctiveService.getDistinctivesByIds(distinctiveIds);
+        if (productDistinctives != null && !productDistinctives.isEmpty()) {
+            System.out.println("Distinctives found: " + productDistinctives.size());
+        } else {
+            System.out.println("No distinctives found.");
+        }
 
         // Create new Product object
         Product product = new Product(id, name, quantity, price, description, status, image1Base64, image2Base64, category, productDistinctives);
@@ -114,17 +120,20 @@ public class ProductController {
         // Save Product to the database
         Product addedProduct = productService.addProduct(product);
 
+        // Create ProductDistinctive objects from Distinctive and Product if there are distinctives
+        if (productDistinctives != null && !productDistinctives.isEmpty()) {
+            List<ProductDistinctive> productDistinctiveList = productDistinctives.stream()
+                .map(distinctive -> new ProductDistinctive(addedProduct, distinctive)) // Create ProductDistinctive object
+                .collect(Collectors.toList());
+            
+            // Save to the product_distinctives table
+            productDistinctiveRepository.saveAll(productDistinctiveList); // Save the records to the database
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED).body(addedProduct);
     }
 
-    // Update product by ID
-    @Operation(summary = "Update product by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Product updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Product not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid data provided"),
-            @ApiResponse(responseCode = "500", description = "Server error")
-    })
+
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProductById(@PathVariable String id,
                                                      @RequestParam String name,
@@ -154,15 +163,40 @@ public class ProductController {
 
         // Get Distinctives by IDs
         List<Distinctive> productDistinctives = distinctiveService.getDistinctivesByIds(distinctiveIds);
+        if (productDistinctives == null || productDistinctives.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Return error if Distinctives are not valid
+        }
 
-        // Create updated Product object
+        // Get the existing product by ID
+        Optional<Product> existingProductOptional = productRepository.findById(id);
+        if (!existingProductOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Return 404 if Product not found
+        }
+
+        Product existingProduct = existingProductOptional.get();
+
+        // Remove existing product distinctives associations if needed (optional, depending on your business logic)
+        if (existingProduct.getDistinctives() != null) {
+            productDistinctiveRepository.deleteByProductId(id); // Remove old associations
+        }
+
+        // Create updated Product object with the new information
         Product updatedProduct = new Product(id, name, quantity, price, description, status, image1Base64, image2Base64, category, productDistinctives);
 
-        // Update Product in the database
-        Product resultProduct = productService.updateProductById(id, updatedProduct);
+        // Save updated Product
+        Product savedProduct = productService.updateProductById(id, updatedProduct);
 
-        return ResponseEntity.ok(resultProduct);
+        // Create and save the new ProductDistinctive associations
+        List<ProductDistinctive> newProductDistinctives = productDistinctives.stream()
+                .map(distinctive -> new ProductDistinctive(savedProduct, distinctive)) // Create ProductDistinctive objects
+                .collect(Collectors.toList());
+        
+        // Save the new associations to the database
+        productDistinctiveRepository.saveAll(newProductDistinctives);
+
+        return ResponseEntity.ok(savedProduct);
     }
+
 
     // Convert MultipartFile to Base64 string
     private String convertFileToBase64(MultipartFile file) {
@@ -185,19 +219,30 @@ public class ProductController {
                 return ResponseEntity.status(404).body("Product not found");
             }
 
-            // Lấy sản phẩm
+            // Lấy sản phẩm và danh sách các liên kết trong bảng ProductDistinctive
             Product product = productOptional.get();
 
-          
+            // Xóa các liên kết trong bảng ProductDistinctive (nếu có)
+            List<ProductDistinctive> productDistinctives = productDistinctiveRepository.findByProductId(id);
+            if (!productDistinctives.isEmpty()) {
+                // Trước khi xóa, bạn cần xử lý xóa hoặc làm sạch các bản ghi trong bảng ProductDistinctive
+                for (ProductDistinctive pd : productDistinctives) {
+                    // Xóa liên kết trong bảng ProductDistinctive
+                    productDistinctiveRepository.delete(pd);
+                }
+            }
 
-            // Xóa sản phẩm
-            productRepository.deleteById(id);
+            // Sau khi xóa các bản ghi trong ProductDistinctive, bạn có thể xóa sản phẩm
+            productRepository.deleteById(id); // Xóa sản phẩm
 
             return ResponseEntity.ok("Product and related records deleted successfully");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error deleting product: " + e.getMessage());
         }
     }
+
+
+
 
 
 

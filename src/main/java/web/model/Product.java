@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Data
@@ -50,13 +51,11 @@ public class Product {
 	private Category category;
 
 	// Quan hệ ManyToMany với Distinctive
-	@JsonManagedReference("product-distinctives") // Unique name for Product-Distinctives reference
+	 @JsonIgnore
+	@JsonManagedReference("product-distinctives")
 	@ManyToMany(cascade = CascadeType.ALL)
-	@JoinTable(name = "product_distinctives", // Tên bảng liên kết
-			joinColumns = @JoinColumn(name = "product_id"), // Cột tham chiếu từ bảng products
-			inverseJoinColumns = @JoinColumn(name = "distinctive_id") // Cột tham chiếu từ bảng distinctives
-	)
-	private List<Distinctive> distinctives; // Quan hệ với Distinctive
+	@JoinTable(name = "product_distinctives", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "distinctive_id"))
+	private List<Distinctive> distinctives;
 
 	// Constructor with images and category
 
