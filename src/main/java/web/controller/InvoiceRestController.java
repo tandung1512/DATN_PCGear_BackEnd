@@ -7,6 +7,7 @@ import java.util.Map;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonNode;
 import web.service.OrderService;
 import web.model.Invoice;
+
 import web.model.MonthlySalesStatistics;
 import web.repository.InvoiceRepository;
 
@@ -42,6 +44,7 @@ public class InvoiceRestController extends HttpServlet {
 	public ResponseEntity<List<Invoice>> getAll(Model model) {
 		return ResponseEntity.ok(dao.findAll());
 	}
+
 
 //Thống kê
 	@GetMapping("/invoices/sales/{year}")
@@ -178,4 +181,6 @@ public class InvoiceRestController extends HttpServlet {
 		List<Invoice> orders = odersv.findByUsernameStatusCancelled(username);
 		return orders;
 	}
+	
+
 }

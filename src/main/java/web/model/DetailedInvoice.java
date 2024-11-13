@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class DetailedInvoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     private int quantity;
     private String paymentMethod;
