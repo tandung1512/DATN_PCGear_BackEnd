@@ -20,6 +20,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.util.StringUtils;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Paths;
+
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
@@ -40,6 +46,8 @@ public class ProductController {
     private DistinctiveService distinctiveService; // Inject DistinctiveService
 
     
+    private static final String IMAGE_DIR = "src/main/resources/webapp/files/images/"; // thư mục lưu ảnh
+
     // Get all products
     @Operation(summary = "Get all products")
     @ApiResponses(value = {
@@ -86,54 +94,37 @@ public class ProductController {
                                               @RequestParam double price,
                                               @RequestParam String description,
                                               @RequestParam String status,
-                                              @RequestParam String categoryId,  // Use categoryId instead of category name
+                                              @RequestParam String categoryId,
                                               @RequestParam List<String> distinctiveIds,
                                               @RequestParam(value = "image1", required = false) MultipartFile image1,
                                               @RequestParam(value = "image2", required = false) MultipartFile image2) {
 
-        // Validate ID
         if (id == null || id.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Return 400 if ID is invalid
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
-        // Convert images to Base64 if they are provided
-        String image1Base64 = image1 != null ? convertFileToBase64(image1) : null;
-        String image2Base64 = image2 != null ? convertFileToBase64(image2) : null;
+        String image1Path = image1 != null ? saveFile(image1) : null;
+        String image2Path = image2 != null ? saveFile(image2) : null;
 
-        // Get Category by ID
         Category category = categoryService.getCategoryById(categoryId);
         if (category == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // If Category not found, return error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
-        // Get Distinctives by IDs
         List<Distinctive> productDistinctives = distinctiveService.getDistinctivesByIds(distinctiveIds);
-        if (productDistinctives != null && !productDistinctives.isEmpty()) {
-            System.out.println("Distinctives found: " + productDistinctives.size());
-        } else {
-            System.out.println("No distinctives found.");
-        }
 
-        // Create new Product object
-        Product product = new Product(id, name, quantity, price, description, status, image1Base64, image2Base64, category, productDistinctives);
-
-        // Save Product to the database
+        Product product = new Product(id, name, quantity, price, description, status, image1Path, image2Path, category, productDistinctives);
         Product addedProduct = productService.addProduct(product);
 
-        // Create ProductDistinctive objects from Distinctive and Product if there are distinctives
         if (productDistinctives != null && !productDistinctives.isEmpty()) {
             List<ProductDistinctive> productDistinctiveList = productDistinctives.stream()
-                .map(distinctive -> new ProductDistinctive(addedProduct, distinctive)) // Create ProductDistinctive object
+                .map(distinctive -> new ProductDistinctive(addedProduct, distinctive))
                 .collect(Collectors.toList());
-            
-            // Save to the product_distinctives table
-            productDistinctiveRepository.saveAll(productDistinctiveList); // Save the records to the database
+            productDistinctiveRepository.saveAll(productDistinctiveList);
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(addedProduct);
     }
-
-
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProductById(@PathVariable String id,
                                                      @RequestParam String name,
@@ -141,73 +132,71 @@ public class ProductController {
                                                      @RequestParam double price,
                                                      @RequestParam String description,
                                                      @RequestParam String status,
-                                                     @RequestParam String categoryId,  // Use categoryId instead of category name
+                                                     @RequestParam String categoryId, 
                                                      @RequestParam List<String> distinctiveIds,
                                                      @RequestParam(value = "image1", required = false) MultipartFile image1,
                                                      @RequestParam(value = "image2", required = false) MultipartFile image2) {
 
-        // Validate ID
         if (id == null || id.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Return 400 if ID is invalid
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
-        // Convert images to Base64 if provided
-        String image1Base64 = image1 != null ? convertFileToBase64(image1) : null;
-        String image2Base64 = image2 != null ? convertFileToBase64(image2) : null;
+        String image1Path = image1 != null ? saveFile(image1) : null;
+        String image2Path = image2 != null ? saveFile(image2) : null;
 
-        // Get Category by ID
         Category category = categoryService.getCategoryById(categoryId);
         if (category == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Return error if Category not found
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
-        // Get Distinctives by IDs
         List<Distinctive> productDistinctives = distinctiveService.getDistinctivesByIds(distinctiveIds);
         if (productDistinctives == null || productDistinctives.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Return error if Distinctives are not valid
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
-        // Get the existing product by ID
         Optional<Product> existingProductOptional = productRepository.findById(id);
         if (!existingProductOptional.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Return 404 if Product not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
         Product existingProduct = existingProductOptional.get();
+        productDistinctiveRepository.deleteByProductId(id);
 
-        // Remove existing product distinctives associations if needed (optional, depending on your business logic)
-        if (existingProduct.getDistinctives() != null) {
-            productDistinctiveRepository.deleteByProductId(id); // Remove old associations
-        }
+        if (image1Path != null) existingProduct.setImage1(image1Path);
+        if (image2Path != null) existingProduct.setImage2(image2Path);
 
-        // Create updated Product object with the new information
-        Product updatedProduct = new Product(id, name, quantity, price, description, status, image1Base64, image2Base64, category, productDistinctives);
+        existingProduct.setName(name);
+        existingProduct.setQuantity(quantity);
+        existingProduct.setPrice(price);
+        existingProduct.setDescription(description);
+        existingProduct.setStatus(status);
+        existingProduct.setCategory(category);
+        existingProduct.setDistinctives(productDistinctives);
 
-        // Save updated Product
-        Product savedProduct = productService.updateProductById(id, updatedProduct);
-
-        // Create and save the new ProductDistinctive associations
+        Product savedProduct = productService.updateProductById(id, existingProduct);
         List<ProductDistinctive> newProductDistinctives = productDistinctives.stream()
-                .map(distinctive -> new ProductDistinctive(savedProduct, distinctive)) // Create ProductDistinctive objects
+                .map(distinctive -> new ProductDistinctive(savedProduct, distinctive))
                 .collect(Collectors.toList());
-        
-        // Save the new associations to the database
         productDistinctiveRepository.saveAll(newProductDistinctives);
 
         return ResponseEntity.ok(savedProduct);
     }
 
 
-    // Convert MultipartFile to Base64 string
-    private String convertFileToBase64(MultipartFile file) {
-        try {
-            byte[] bytes = file.getBytes();
-            return Base64.getEncoder().encodeToString(bytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+private String saveFile(MultipartFile file) {
+    String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+    File dir = new File(IMAGE_DIR);
+    if (!dir.exists()) dir.mkdirs();
+
+    String filePath = Paths.get(IMAGE_DIR, fileName).toString();
+    try (FileOutputStream fos = new FileOutputStream(filePath)) {
+        fos.write(file.getBytes());
+        return filePath; // Trả về đường dẫn file
+    } catch (IOException e) {
+        e.printStackTrace();
+        return null;
     }
+}
     
  // Xóa sản phẩm và các liên kết trong bảng products_distinctives
     @DeleteMapping("/{id}")
