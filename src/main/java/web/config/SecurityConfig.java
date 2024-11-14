@@ -16,6 +16,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+
 import web.filter.JwtRequestFilter;
 import web.service.CustomUserDetailsService;
 
@@ -52,7 +54,10 @@ public class SecurityConfig {
             .authorizeRequests(auth -> auth
 
 
-                .requestMatchers("/api/auth/**","/api/accounts/register","/api/accounts/profile", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/api/products").permitAll()
+                .requestMatchers("/api/auth/**","/api/accounts/register","/api/accounts/profile",
+                		"/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
+                		"/api/products","/api/products/images/**"
+                		).permitAll()
                 .requestMatchers("/api/accounts/**", "/api/suppliers/**","/api/brands/**","/api/stock-receipts/**","/api/distinctives/**","/api/categories/**").hasRole("ADMIN")
 
                 
@@ -77,4 +82,5 @@ public class SecurityConfig {
                 .passwordEncoder(passwordEncoder());
         return authenticationManagerBuilder.build();
     }
+   
 }

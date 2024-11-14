@@ -14,6 +14,14 @@ import web.repository.ProductDistinctiveRepository;
 import web.repository.ProductRepository;
 import web.service.*;
 
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Base64;
 import java.util.List;
@@ -25,6 +33,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/api/products")
@@ -48,6 +60,22 @@ public class ProductController {
     
     private static final String IMAGE_DIR = "src/main/resources/webapp/files/images/"; // thư mục lưu ảnh
 
+    // API trả về hình ảnh
+    @GetMapping("/images/{imageName}")
+    public ResponseEntity<Resource> getImage(@PathVariable String imageName) {
+        // Đảm bảo rằng đường dẫn file ảnh hợp lệ
+        Path imagePath = Paths.get("src/main/resources/webapp/files/images/").resolve(imageName);
+        Resource resource = new FileSystemResource(imagePath);
+
+        if (resource.exists() && resource.isReadable()) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG)  // Hoặc MediaType.IMAGE_PNG nếu là ảnh PNG
+                    .body(resource);
+        } else {
+            return ResponseEntity.notFound().build();  // Trả về 404 nếu không tìm thấy ảnh
+        }
+    }
+    
     // Get all products
     @Operation(summary = "Get all products")
     @ApiResponses(value = {
