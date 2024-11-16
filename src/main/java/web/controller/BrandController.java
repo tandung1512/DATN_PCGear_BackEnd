@@ -70,6 +70,7 @@ public class BrandController {
         }
     }
     
+    
     @Operation(summary = "Update a brand by id")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Brand updated successfully"),
