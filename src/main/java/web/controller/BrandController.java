@@ -14,6 +14,7 @@ import web.service.BrandService;
 import java.util.List;
 
 @RestController
+@CrossOrigin("*")
 @RequestMapping("/api/brands")
 public class BrandController {
 
@@ -28,6 +29,7 @@ public class BrandController {
     @GetMapping
     public ResponseEntity<List<Brand>> getAllBrands() {
         List<Brand> brands = brandService.getAllBrands();
+        System.out.print(brands);
         if (brands.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(brands); // Return 204 if no brands found
         }

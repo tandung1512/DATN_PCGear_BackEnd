@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,5 +25,8 @@ public class Brand {
     private String address;
 
     @OneToMany(mappedBy = "brand")
+    @JsonIgnore
     private List<StockReceipt> stockReceipts;
+    
+    
 }
