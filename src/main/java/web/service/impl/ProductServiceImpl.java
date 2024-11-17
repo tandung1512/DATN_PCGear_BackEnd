@@ -94,4 +94,8 @@ public class ProductServiceImpl implements ProductService {  // Use 'implements'
         }
         productRepository.deleteById(id);  // Delete the product from the repository
     }
+    
+    public List<Product> searchProductsByName(String name) {
+        return productRepository.findByNameContainingIgnoreCase(name);
+    }
 }
