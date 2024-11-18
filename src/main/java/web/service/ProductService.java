@@ -26,6 +26,6 @@ public interface ProductService {
     // Xóa sản phẩm theo ID
     void deleteProduct(String id);  // Method to delete a product by ID
     
-    
+    public List<Product> searchProductsByName(String name);
 }
 
