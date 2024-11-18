@@ -21,7 +21,22 @@ public class ProductServiceImpl implements ProductService {  // Use 'implements'
     public List<Product> getAllProducts() {
         return productRepository.findAll();  // Retrieve all products from the repository
     }
-
+//    public List<Product> getAllProducts() {
+//        List<Product> products = productRepository.findAll();
+//        for (Product product : products) {
+//            // Chuyển đổi giá trị isHot từ int (0 hoặc 1) thành boolean
+//            int isHotAsInt = product.() ? 1 : 0;  // Chuyển từ boolean thành int (nếu cần)
+//            boolean isHot = isHotAsInt == 1;
+//
+//            // Nếu isHot là true, thực hiện một hành động nào đó
+//            if (isHot) {
+//                // Logic nếu sản phẩm là 'Nổi bật'
+//            } else {
+//                // Logic nếu sản phẩm không phải 'Nổi bật'
+//            }
+//        }
+//        return products;
+//    } 
     @Override
     public Product getProductById(String id) {
         // Fetch the product by ID. If not found, throw an exception
@@ -79,6 +94,11 @@ public class ProductServiceImpl implements ProductService {  // Use 'implements'
         if (updatedProduct.getImage2() != null) {
             existingProduct.setImage2(updatedProduct.getImage2());
         }
+        if (updatedProduct.getIsHot()) { // Cập nhật trạng thái nổi bật
+            existingProduct.setIsHot(true);
+        } else {
+            existingProduct.setIsHot(false);
+        }
         if (updatedProduct.getCategory() != null) {
             existingProduct.setCategory(updatedProduct.getCategory());
         }
@@ -95,7 +115,10 @@ public class ProductServiceImpl implements ProductService {  // Use 'implements'
         productRepository.deleteById(id);  // Delete the product from the repository
     }
     
-    public List<Product> searchProductsByName(String name) {
-        return productRepository.findByNameContainingIgnoreCase(name);
+
+    
+    @Override
+    public List<Product> getHotProducts() {
+        return productRepository.findByIsHotTrue(); // Gọi repository để lấy sản phẩm nổi bật
     }
 }

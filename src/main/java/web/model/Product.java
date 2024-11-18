@@ -28,11 +28,15 @@ public class Product {
 	private String status;
 	private String image1;
 	private String image2;
+//	@Column(name = "isHot", columnDefinition = "BIT(1) DEFAULT 0", nullable = false)
+	@Column(name = "is_hot")
+	private boolean isHot;
+
 
 	// Constructor đầy đủ với các trường image1 và image2 thay vì image1Base64,
-	// image2Base64
+	
 	public Product(String id, String name, int quantity, double price, String description, String status, String image1,
-			String image2, Category category, List<Distinctive> distinctives) {
+			String image2, boolean isHot, Category category, List<Distinctive> distinctives) {
 		this.id = id;
 		this.name = name;
 		this.quantity = quantity;
@@ -41,10 +45,25 @@ public class Product {
 		this.status = status;
 		this.image1 = image1;
 		this.image2 = image2;
+		this.isHot = isHot;
 		this.category = category;
 		this.distinctives = distinctives;
 	}
+	 public boolean getIsHot() {
+	        return isHot;
+	    }
 
+	    public void setIsHot(boolean isHot) {
+	        this.isHot = isHot;
+	    }
+	
+//	   public boolean isHot() {
+//	        return isHot;
+//	    }
+//
+//	    public void setHot(boolean isHot) {
+//	        this.isHot = isHot;
+//	    }
 	@JsonBackReference("product-category") // Unique name for Category reference
 	@ManyToOne
 	@JoinColumn(name = "category_id", nullable = true)
