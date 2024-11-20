@@ -22,6 +22,8 @@
 	</properties>
 
 	<dependencies>
+		<!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
+
 
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
