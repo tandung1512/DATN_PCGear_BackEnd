@@ -41,13 +41,7 @@ public class AccountController {
     @Autowired
     private PasswordEncoder passwordEncoder;
     
-    @GetMapping
-    public Page<Account> getAccounts(@RequestParam(defaultValue = "0") int page,
-                                      @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return accountService.getAllAccounts(pageable);
-    }
-
+   
     @Operation(summary = "Get all accounts", description = "Retrieve a list of all registered accounts")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved list",
