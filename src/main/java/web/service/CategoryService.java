@@ -71,6 +71,12 @@ public class CategoryService {
 
         // Lưu lại category đã cập nhật
         return categoryRepository.save(existingCategory);
+        
+        
+    }
+    
+    public List<Category> getHotCategoriesWithProducts() {
+        return categoryRepository.findHotCategoriesWithProducts();
     }
 
 
@@ -85,4 +91,6 @@ public class CategoryService {
     public List<Category> findByIsHotTrue() {
         return categoryRepository.findByIsHotTrue(); // Truy vấn danh mục có isHot = true
     }
+    
+    
 }

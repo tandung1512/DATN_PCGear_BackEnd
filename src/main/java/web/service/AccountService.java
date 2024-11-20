@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Optional;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 @Service
 public class AccountService {
@@ -29,6 +33,10 @@ public class AccountService {
     @Autowired
     private PasswordEncoder passwordEncoder; // For encoding passwords
 
+    public Page<Account> getAllAccounts(Pageable pageable) {
+        return accountRepository.findAll(pageable);
+    }
+    
     public List<Account> findAll() {
         return accountRepository.findAll();
     }

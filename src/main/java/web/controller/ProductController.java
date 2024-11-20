@@ -98,7 +98,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found"),
             @ApiResponse(responseCode = "500", description = "Server error")
     })
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<?> getProductById(@PathVariable String id) {
         try {
             Product product = productService.getProductById(id); // Retrieve the product by ID

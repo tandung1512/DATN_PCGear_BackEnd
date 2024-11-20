@@ -119,6 +119,11 @@ public class CategoryController {
         return ResponseEntity.ok(hotCategories); // Return 200 with list of hot categories
     }
     
+    @GetMapping("/hot-with-products")
+    public ResponseEntity<List<Category>> getHotCategoriesWithProducts() {
+        List<Category> hotCategories = categoryService.getHotCategoriesWithProducts();
+        return ResponseEntity.ok(hotCategories);
+    }
     // Inner class for error responses
     public static class CategoryErrorResponse {
         private String message;
@@ -135,4 +140,6 @@ public class CategoryController {
             this.message = message;
         }
     }
+    
+    
 }

@@ -24,7 +24,11 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin
@@ -36,6 +40,13 @@ public class AccountController {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @GetMapping
+    public Page<Account> getAccounts(@RequestParam(defaultValue = "0") int page,
+                                      @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return accountService.getAllAccounts(pageable);
+    }
 
     @Operation(summary = "Get all accounts", description = "Retrieve a list of all registered accounts")
     @ApiResponses(value = {
