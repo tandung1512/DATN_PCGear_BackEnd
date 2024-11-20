@@ -1,5 +1,6 @@
 package web.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
@@ -16,14 +17,16 @@ public class DetailedInvoice {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Khóa chính, kiểu Long
+    private Long id;
 
-    private int quantity; // Số lượng sản phẩm
-    private String paymentMethod; // Phương thức thanh toán
+    private int quantity; 
+    private String paymentMethod; 
 
     @ManyToOne
+    
     @JoinColumn(name = "invoice_id", nullable = false)
-    private Invoice invoice; // Liên kết với bảng hóa đơn
+    @JsonBackReference 
+    private Invoice invoice; 
     @ManyToOne
     
     @JoinColumn(name = "product_id")

@@ -45,29 +45,6 @@ public class InvoiceRestController extends HttpServlet {
 		return ResponseEntity.ok(dao.findAll());
 	}
 
-
-//Thống kê
-	@GetMapping("/invoices/sales/{year}")
-	public ResponseEntity<List<MonthlySalesStatistics>> getSales(@PathVariable("year") int year) {
-		List<MonthlySalesStatistics> sales = dao.getMonthlySalesStatistics(year);
-		return ResponseEntity.ok(sales);
-	}
-
-
-	//Thống kê
-	@GetMapping("/invoices/bars/{year}")
-	public ResponseEntity<List<MonthlySalesStatistics>> getBars(@PathVariable("year") int year) {
-		List<MonthlySalesStatistics> bars = dao.getMonthlySalesStatisticsbras(year);
-		return ResponseEntity.ok(bars);
-	}
-
-//Láy ra số năm
-	@GetMapping("/invoices/year")
-	public ResponseEntity<List<Integer>> getSales() {
-		List<Integer> allYear = dao.findAllDistinctYears();
-		return ResponseEntity.ok(allYear);
-	}
-
 	@GetMapping("/invoices/{keyword}")
 	public ResponseEntity<List<Invoice>> getInvoicesByKeyword(@PathVariable("keyword") String keyword) {
 		List<Invoice> invoices = dao.findByStatusContainingIgnoreCase(keyword);

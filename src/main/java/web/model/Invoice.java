@@ -10,6 +10,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -40,8 +43,9 @@ public class Invoice {
     private Account user;
     
 
-
+    @JsonIgnore
     @OneToMany(mappedBy = "invoice")
+    @JsonManagedReference 
     private List<DetailedInvoice> detailedInvoices;
     public String getStatusName() {
 		String statusName = "";
