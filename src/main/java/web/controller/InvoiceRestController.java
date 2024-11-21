@@ -96,17 +96,25 @@ public class InvoiceRestController extends HttpServlet {
 
 	@GetMapping("/ordered-list/details/{id}")
 	public ResponseEntity<Map<String, Object>> getOrderDetails(@PathVariable("id") String id) {
-		Invoice order = odersv.findById(id);
+	    Invoice order = odersv.findById(id);
 
-		double totalPrice = order.getDetailedInvoices().stream()
-				.mapToDouble(detail -> detail.getProduct().getPrice() * detail.getQuantity()).sum();
+	    // Kiểm tra chi tiết sản phẩm trong hóa đơn
+	    if (order.getDetailedInvoices() == null || order.getDetailedInvoices().isEmpty()) {
+	        System.out.println("Không có chi tiết sản phẩm trong hóa đơn: " + id);
+	    } else {
+	        System.out.println("Chi tiết sản phẩm: " + order.getDetailedInvoices());
+	    }
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("order", order);
-		response.put("totalPrice", totalPrice);
+	    double totalPrice = order.getDetailedInvoices().stream()
+	            .mapToDouble(detail -> detail.getProduct().getPrice() * detail.getQuantity()).sum();
 
-		return ResponseEntity.ok(response);
+	    Map<String, Object> response = new HashMap<>();
+	    response.put("order", order);
+	    response.put("totalPrice", totalPrice);
+
+	    return ResponseEntity.ok(response);
 	}
+
 
 	@PutMapping("/ordered-list/details/{id}")
 	public ResponseEntity<String> cancelOrder(@PathVariable("id") String id) {

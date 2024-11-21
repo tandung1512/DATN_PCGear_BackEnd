@@ -88,6 +88,7 @@ public class Product {
 	// private List<Cart> carts;
 
 	@OneToMany(mappedBy = "product")
+	@JsonIgnore
 	private List<DetailedInvoice> detailedInvoices;
 	
 }
