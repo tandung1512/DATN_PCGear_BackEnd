@@ -10,7 +10,7 @@ import web.model.ReportRevenue_Quantity;
 import web.model.ReportTotalRevenueDetail;
 
 @Repository
-public interface DetailedInvoiceRepository extends JpaRepository<DetailedInvoice, String> {
+public interface DetailedInvoiceRepository extends JpaRepository<DetailedInvoice, Long> {
        // Các phương thức truy vấn tùy chỉnh nếu cần
        List<DetailedInvoice> findByInvoiceId(String invoiceId);
 

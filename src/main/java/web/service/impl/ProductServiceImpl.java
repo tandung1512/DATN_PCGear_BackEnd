@@ -21,22 +21,7 @@ public class ProductServiceImpl implements ProductService {  // Use 'implements'
     public List<Product> getAllProducts() {
         return productRepository.findAll();  // Retrieve all products from the repository
     }
-//    public List<Product> getAllProducts() {
-//        List<Product> products = productRepository.findAll();
-//        for (Product product : products) {
-//            // Chuyển đổi giá trị isHot từ int (0 hoặc 1) thành boolean
-//            int isHotAsInt = product.() ? 1 : 0;  // Chuyển từ boolean thành int (nếu cần)
-//            boolean isHot = isHotAsInt == 1;
-//
-//            // Nếu isHot là true, thực hiện một hành động nào đó
-//            if (isHot) {
-//                // Logic nếu sản phẩm là 'Nổi bật'
-//            } else {
-//                // Logic nếu sản phẩm không phải 'Nổi bật'
-//            }
-//        }
-//        return products;
-//    } 
+
     @Override
     public Product getProductById(String id) {
         // Fetch the product by ID. If not found, throw an exception

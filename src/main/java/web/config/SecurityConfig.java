@@ -64,7 +64,7 @@ public class SecurityConfig {
             .authorizeRequests(auth -> auth
                 .requestMatchers("/api/auth/**","/api/accounts/register","/api/accounts/profile",
                 		"/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/api/categories/get/**","/api/categories/hot-with-products",
-                		"/api/products/get/**",
+                		"/api/products/get/**","/api/ghn/**",
                 		"/api/products/*","/api/products","/api/products/images/**","/api/products/hot","/api/categories/hot","/api/auth/login"
                 		).permitAll()
                 .requestMatchers("/api/accounts/**", "/api/suppliers/**","/api/brands/**","/api/stock-receipts/**","/api/distinctives/**","/api/categories/**").hasRole("ADMIN")
