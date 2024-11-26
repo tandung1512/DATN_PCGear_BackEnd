@@ -69,6 +69,7 @@ public class BannerController {
 		}
 	}
 
+	
 
 	@GetMapping
 	public ResponseEntity<List<Banner>> getAllBanner() {

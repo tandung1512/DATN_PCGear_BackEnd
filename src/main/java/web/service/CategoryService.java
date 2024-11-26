@@ -55,19 +55,30 @@ public class CategoryService {
     
     // Cập nhật danh mục theo ID
     public Category updateCategory(String id, Category updatedCategory) {
+        // Tìm kiếm category theo ID
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found with ID: " + id));
 
-        // Cập nhật các trường từ updatedCategory
+        // Cập nhật các trường từ updatedCategory nếu có giá trị khác null
         if (updatedCategory.getName() != null) {
             existingCategory.setName(updatedCategory.getName());
         }
         if (updatedCategory.getDescription() != null) {
             existingCategory.setDescription(updatedCategory.getDescription());
         }
+        // Cập nhật trường 'isHot' nếu có giá trị
+        existingCategory.setIsHot(updatedCategory.getIsHot());
 
+        // Lưu lại category đã cập nhật
         return categoryRepository.save(existingCategory);
+        
+        
     }
+    
+    public List<Category> getHotCategoriesWithProducts() {
+        return categoryRepository.findHotCategoriesWithProducts();
+    }
+
 
     // Xóa danh mục theo ID
     public void deleteCategory(String id) {
@@ -76,4 +87,10 @@ public class CategoryService {
         }
         categoryRepository.deleteById(id);
     }
+    
+    public List<Category> findByIsHotTrue() {
+        return categoryRepository.findByIsHotTrue(); // Truy vấn danh mục có isHot = true
+    }
+    
+    
 }

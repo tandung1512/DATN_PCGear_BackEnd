@@ -26,7 +26,7 @@ public class CategoryController {
         @ApiResponse(responseCode = "204", description = "No categories found"),
         @ApiResponse(responseCode = "500", description = "Server error")
     })
-    @GetMapping
+    @GetMapping("/get/all")
     public ResponseEntity<List<Category>> getAllCategories() {
         List<Category> categories = categoryService.getAllCategories();
         if (categories.isEmpty()) {
@@ -41,7 +41,7 @@ public class CategoryController {
         @ApiResponse(responseCode = "404", description = "Category not found"),
         @ApiResponse(responseCode = "500", description = "Server error")
     })
-    @GetMapping("/{id}")
+    @GetMapping("get/{id}")
     public ResponseEntity<?> getCategoryById(@PathVariable String id) {
         try {
             Category category = categoryService.getCategoryById(id);
@@ -79,6 +79,7 @@ public class CategoryController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCategoryById(@PathVariable String id, @RequestBody Category updatedCategory) {
         try {
+            // Update category including the isHot field
             Category category = categoryService.updateCategory(id, updatedCategory);
             return ResponseEntity.ok(category);
         } catch (ResponseStatusException e) {
@@ -102,6 +103,27 @@ public class CategoryController {
         }
     }
 
+    // Method to get categories where isHot = true
+    @Operation(summary = "Get all hot categories")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved hot categories"),
+        @ApiResponse(responseCode = "204", description = "No hot categories found"),
+        @ApiResponse(responseCode = "500", description = "Server error")
+    })
+    @GetMapping("/hot")
+    public ResponseEntity<List<Category>> getHotCategories() {
+        List<Category> hotCategories = categoryService.findByIsHotTrue();
+        if (hotCategories.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(hotCategories); // Return 204 if no hot categories found
+        }
+        return ResponseEntity.ok(hotCategories); // Return 200 with list of hot categories
+    }
+    
+    @GetMapping("/hot-with-products")
+    public ResponseEntity<List<Category>> getHotCategoriesWithProducts() {
+        List<Category> hotCategories = categoryService.getHotCategoriesWithProducts();
+        return ResponseEntity.ok(hotCategories);
+    }
     // Inner class for error responses
     public static class CategoryErrorResponse {
         private String message;
@@ -118,4 +140,6 @@ public class CategoryController {
             this.message = message;
         }
     }
+    
+    
 }

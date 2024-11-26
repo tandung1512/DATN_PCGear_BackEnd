@@ -79,6 +79,11 @@ public class ProductServiceImpl implements ProductService {  // Use 'implements'
         if (updatedProduct.getImage2() != null) {
             existingProduct.setImage2(updatedProduct.getImage2());
         }
+        if (updatedProduct.getIsHot()) { // Cập nhật trạng thái nổi bật
+            existingProduct.setIsHot(true);
+        } else {
+            existingProduct.setIsHot(false);
+        }
         if (updatedProduct.getCategory() != null) {
             existingProduct.setCategory(updatedProduct.getCategory());
         }
@@ -93,5 +98,12 @@ public class ProductServiceImpl implements ProductService {  // Use 'implements'
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found with ID: " + id);
         }
         productRepository.deleteById(id);  // Delete the product from the repository
+    }
+    
+
+    
+    @Override
+    public List<Product> getHotProducts() {
+        return productRepository.findByIsHotTrue(); // Gọi repository để lấy sản phẩm nổi bật
     }
 }

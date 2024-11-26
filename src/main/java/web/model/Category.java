@@ -21,8 +21,22 @@ public class Category {
 
     private String name;
     private String description;
+    @Column(name = "is_hot")
+	private boolean isHot;
+    
+    public boolean getIsHot() {
+        return isHot;
+    }
+
+    public void setIsHot(boolean isHot) {
+        this.isHot = isHot;
+    }
+
+
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference("product-category") // Sử dụng JsonManagedReference để tuần tự hóa danh sách products
     private List<Product> products;
+    
+    
 }

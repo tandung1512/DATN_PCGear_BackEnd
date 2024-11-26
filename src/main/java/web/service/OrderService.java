@@ -13,12 +13,8 @@ public interface OrderService {
 
     Invoice findById(String id);
 
-    List<Invoice> findByUsernameStatusPending(String username);
+    List<Invoice> getInvoicesByUsernameAndStatus(String username, String status);
 
-    List<Invoice> findByUsernameStatusDelivery(String username);
-
-    List<Invoice> findByUsernameStatusComplete(String username);
-
-    List<Invoice> findByUsernameStatusCancelled(String username);
+    
     
 }

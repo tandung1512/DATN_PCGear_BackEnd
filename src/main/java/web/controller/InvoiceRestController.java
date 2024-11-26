@@ -1,14 +1,18 @@
 package web.controller;
 
+import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,9 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import web.service.OrderService;
+import web.model.DetailedInvoice;
 import web.model.Invoice;
-
-import web.model.MonthlySalesStatistics;
+import web.repository.DetailedInvoiceRepository;
 import web.repository.InvoiceRepository;
 
 @RestController
@@ -36,43 +40,22 @@ import web.repository.InvoiceRepository;
 public class InvoiceRestController extends HttpServlet {
 	@Autowired
 	InvoiceRepository dao;
-
 	@Autowired
-	OrderService odersv;
+	DetailedInvoiceRepository detailedInvoiceRepository;
+	@Autowired
+	OrderService ordersv;
 
 	@GetMapping("/invoices")
 	public ResponseEntity<List<Invoice>> getAll(Model model) {
 		return ResponseEntity.ok(dao.findAll());
 	}
 
-
-//Thống kê
-	@GetMapping("/invoices/sales/{year}")
-	public ResponseEntity<List<MonthlySalesStatistics>> getSales(@PathVariable("year") int year) {
-		List<MonthlySalesStatistics> sales = dao.getMonthlySalesStatistics(year);
-		return ResponseEntity.ok(sales);
-	}
-
-
-	//Thống kê
-	@GetMapping("/invoices/bars/{year}")
-	public ResponseEntity<List<MonthlySalesStatistics>> getBars(@PathVariable("year") int year) {
-		List<MonthlySalesStatistics> bars = dao.getMonthlySalesStatisticsbras(year);
-		return ResponseEntity.ok(bars);
-	}
-
-//Láy ra số năm
-	@GetMapping("/invoices/year")
-	public ResponseEntity<List<Integer>> getSales() {
-		List<Integer> allYear = dao.findAllDistinctYears();
-		return ResponseEntity.ok(allYear);
-	}
-
-	@GetMapping("/invoices/{keyword}")
-	public ResponseEntity<List<Invoice>> getInvoicesByKeyword(@PathVariable("keyword") String keyword) {
-		List<Invoice> invoices = dao.findByStatusContainingIgnoreCase(keyword);
-		return ResponseEntity.ok(invoices);
-	}
+	// Lấy hóa đơn theo keyword (status)
+    @GetMapping("/invoices/{keyword}")
+    public ResponseEntity<List<Invoice>> getInvoicesByKeyword(@PathVariable("keyword") String keyword) {
+        List<Invoice> invoices = dao.findByStatusContainingIgnoreCase(keyword);
+        return ResponseEntity.ok(invoices);
+    }
 
 	@GetMapping("/invoice/{id}")
 	public ResponseEntity<Invoice> getOne(@PathVariable("id") String id) {
@@ -114,26 +97,62 @@ public class InvoiceRestController extends HttpServlet {
 
 	@PostMapping("/orders")
 	public Invoice create(@RequestBody JsonNode orderData) {
-		return odersv.create(orderData);
+		return ordersv.create(orderData);
 	}
 
 	@GetMapping("/ordered-list/details/{id}")
 	public ResponseEntity<Map<String, Object>> getOrderDetails(@PathVariable("id") String id) {
-		Invoice order = odersv.findById(id);
+	    // Tìm hóa đơn theo ID
+	    Invoice order = dao.findById(id).orElse(null);
 
-		double totalPrice = order.getDetailedInvoices().stream()
-				.mapToDouble(detail -> detail.getProduct().getPrice() * detail.getQuantity()).sum();
+	    if (order == null) {
+	        // Nếu không tìm thấy hóa đơn, trả về 404
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", "Hóa đơn không tồn tại"));
+	    }
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("order", order);
-		response.put("totalPrice", totalPrice);
+	    // Lấy toàn bộ chi tiết hóa đơn từ hóa đơn chính
+	    List<DetailedInvoice> detailedInvoices = order.getDetailedInvoices();
 
-		return ResponseEntity.ok(response);
+	    // Kiểm tra xem có chi tiết hóa đơn không
+	    if (detailedInvoices == null || detailedInvoices.isEmpty()) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", "Không có chi tiết hóa đơn cho mã hóa đơn này"));
+	    }
+
+	    // Tạo phản hồi trả về thông tin của tất cả các chi tiết hóa đơn
+	    Map<String, Object> response = new HashMap<>();
+	    response.put("orderId", order.getId());
+	    response.put("address", order.getAddress());
+	    response.put("status", order.getStatus());
+	    response.put("orderDate", order.getOrderDate());
+	    
+	    // Tạo danh sách chi tiết hóa đơn
+	    List<Map<String, Object>> detailedList = new ArrayList<>();
+	    
+	    for (DetailedInvoice detailedInvoice : detailedInvoices) {
+	        Map<String, Object> detailInfo = new HashMap<>();
+	        detailInfo.put("id", detailedInvoice.getId());
+	        detailInfo.put("product_id", detailedInvoice.getProduct().getId());
+	        detailInfo.put("product_name", detailedInvoice.getProduct().getName());
+	        detailInfo.put("quantity", detailedInvoice.getQuantity());
+	        detailInfo.put("price", detailedInvoice.getProduct().getPrice());
+	        detailInfo.put("payment_method", detailedInvoice.getPaymentMethod());
+	        
+	        detailedList.add(detailInfo);
+	    }
+	    
+	    // Đưa chi tiết hóa đơn vào phản hồi
+	    response.put("detailedInvoices", detailedList);
+
+	    return ResponseEntity.ok(response);
 	}
+
+
+
+
 
 	@PutMapping("/ordered-list/details/{id}")
 	public ResponseEntity<String> cancelOrder(@PathVariable("id") String id) {
-		Invoice order = odersv.findById(id);
+		Invoice order = ordersv.findById(id);
 
 		if (order == null) {
 			return ResponseEntity.notFound().build();
@@ -143,7 +162,7 @@ public class InvoiceRestController extends HttpServlet {
 			return ResponseEntity.badRequest().body("Cannot cancel order with current status.");
 		}
 
-		// Update the order status to "cancelled" (or update status as needed)
+		
 		order.setStatus("cancelled");
 		// Update any other necessary properties of the order
 
@@ -153,34 +172,28 @@ public class InvoiceRestController extends HttpServlet {
 		return ResponseEntity.ok("Order cancelled successfully.");
 	}
 
-	@GetMapping("/order-list/pending")
-	public List<Invoice> getOrderedList(Model model, HttpServletRequest request) {
-		String username = request.getRemoteUser();
-		List<Invoice> orders = odersv.findByUsernameStatusPending(username);
-		return orders;
-	}
+	 @GetMapping("/order-list/pending")
+	    public List<Invoice> getOrderedListPending(HttpServletRequest request) {
+	        String username = request.getRemoteUser();
+	        return ordersv.getInvoicesByUsernameAndStatus(username, "pending");
+	    }
+	 @GetMapping("/order-list/delivery")
+	    public List<Invoice> getOrderedListDelivery() {
+	        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+	        return ordersv.getInvoicesByUsernameAndStatus(username, "delivery");
+	    }
 
-	@GetMapping("/order-list/delivery")
-	public List<Invoice> getOrderedListdelivery(Model model) {
-	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-	    String username = authentication.getName();
-	    List<Invoice> orders = odersv.findByUsernameStatusDelivery(username);
-	    return orders;
-	}
+	 @GetMapping("/order-list/complete")
+	    public List<Invoice> getOrderedListComplete(HttpServletRequest request) {
+	        String username = request.getRemoteUser();
+	        return ordersv.getInvoicesByUsernameAndStatus(username, "complete");
+	    }
 
-	@GetMapping("/order-list/complete")
-	public List<Invoice> getOrderedListComplete(Model model, HttpServletRequest request) {
-		String username = request.getRemoteUser();
-		List<Invoice> orders = odersv.findByUsernameStatusComplete(username);
-		return orders;
-	}
-
-	@GetMapping("/order-list/cancelled")
-	public List<Invoice> getOrderedListCacelled(Model model, HttpServletRequest request) {
-		String username = request.getRemoteUser();
-		List<Invoice> orders = odersv.findByUsernameStatusCancelled(username);
-		return orders;
-	}
+	 @GetMapping("/order-list/cancelled")
+	    public List<Invoice> getOrderedListCancelled(HttpServletRequest request) {
+	        String username = request.getRemoteUser();
+	        return ordersv.getInvoicesByUsernameAndStatus(username, "cancelled");
+	    }
 	
 
 }

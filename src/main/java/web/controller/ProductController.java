@@ -98,7 +98,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found"),
             @ApiResponse(responseCode = "500", description = "Server error")
     })
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<?> getProductById(@PathVariable String id) {
         try {
             Product product = productService.getProductById(id); // Retrieve the product by ID
@@ -122,12 +122,14 @@ public class ProductController {
                                               @RequestParam double price,
                                               @RequestParam String description,
                                               @RequestParam String status,
+                                              @RequestParam boolean isHot,
                                               @RequestParam String categoryId,
                                               @RequestParam List<String> distinctiveIds,
                                               @RequestParam(value = "image1", required = false) MultipartFile image1,
                                               @RequestParam(value = "image2", required = false) MultipartFile image2) {
 
-        if (id == null || id.trim().isEmpty()) {
+    	System.out.println("isHot value: " + isHot);
+    	if (id == null || id.trim().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
@@ -141,7 +143,7 @@ public class ProductController {
 
         List<Distinctive> productDistinctives = distinctiveService.getDistinctivesByIds(distinctiveIds);
 
-        Product product = new Product(id, name, quantity, price, description, status, image1Path, image2Path, category, productDistinctives);
+        Product product = new Product(id, name, quantity, price, description, status, image1Path, image2Path,isHot, category, productDistinctives);
         Product addedProduct = productService.addProduct(product);
 
         if (productDistinctives != null && !productDistinctives.isEmpty()) {
@@ -160,6 +162,7 @@ public class ProductController {
                                                      @RequestParam double price,
                                                      @RequestParam String description,
                                                      @RequestParam String status,
+                                                     @RequestParam boolean isHot,
                                                      @RequestParam String categoryId, 
                                                      @RequestParam List<String> distinctiveIds,
                                                      @RequestParam(value = "image1", required = false) MultipartFile image1,
@@ -198,6 +201,7 @@ public class ProductController {
         existingProduct.setPrice(price);
         existingProduct.setDescription(description);
         existingProduct.setStatus(status);
+        existingProduct.setIsHot(isHot);
         existingProduct.setCategory(category);
         existingProduct.setDistinctives(productDistinctives);
 
@@ -224,6 +228,14 @@ private String saveFile(MultipartFile file) {
         e.printStackTrace();
         return null;
     }
+}
+@GetMapping("/hot")
+public ResponseEntity<List<Product>> getHotProducts() {
+    List<Product> hotProducts = productService.getHotProducts();
+    if (hotProducts.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(hotProducts);
+    }
+    return ResponseEntity.ok(hotProducts);
 }
     
  // Xóa sản phẩm và các liên kết trong bảng products_distinctives

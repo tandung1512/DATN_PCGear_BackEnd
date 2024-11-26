@@ -3,6 +3,7 @@ package web.model;
 import java.util.List;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -40,7 +41,9 @@ public class Account {
     @Email(message = "Email should be valid")
     private String email;
 
-    private String address;
+    @OneToMany(mappedBy = "account")  // Updated to match the 'account' field in Address
+    
+    private List<Addresses> addresses;  
     private String image;
     private boolean admin;
     private boolean status;
@@ -62,7 +65,9 @@ public class Account {
     @OneToMany(mappedBy = "user") // Assuming 'user' is the field in UserHistory
     @JsonIgnore
     private List<UserHistory> userHistories;
-
+    public List<Addresses> getAddresses() {
+        return addresses;
+    }
     @Override
     public String toString() {
         return "Account{" +
@@ -71,7 +76,7 @@ public class Account {
                ", password='" + password + '\'' +
                ", phone='" + phone + '\'' +
                ", email='" + email + '\'' +
-               ", address='" + address + '\'' +
+               ", addresses='" + addresses + '\''+
                ", image='" + image + '\'' +
                ", admin=" + admin +
                ", status=" + status +
