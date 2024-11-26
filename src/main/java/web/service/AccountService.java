@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.ServletContext;
 import web.model.Account;
+import web.model.Addresses;
 import web.repository.AccountRepository;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +56,7 @@ public class AccountService {
     }
 
     // Register a new account as a regular user (admin set to false by default)
-    public void registerAccount(String id, String name, String password, String phone, String email, String address, MultipartFile imageFile) throws Exception {
+    public void registerAccount(String id, String name, String password, String phone, String email,List<String> addresses, MultipartFile imageFile) throws Exception {
 
         // Check if ID (username) already exists
         Optional<Account> existingAccount = accountRepository.findById(id);
@@ -78,13 +80,24 @@ public class AccountService {
                 .password(encodedPassword)
                 .phone(phone)
                 .email(email)
-                .address(address)
+                
                 .image(imagePath)
                 .admin(false) // Set to false to create a regular user account
                 .status(true) // Default to true
                 .confirm(true) // Default to true
                 .otp(null) // Default to null
                 .build();
+        List<Addresses> addressEntities = addresses.stream()
+                .map(addressDetail -> {
+                    Addresses addressEntity = new Addresses();
+                    addressEntity.setDetail(addressDetail); // Gán chi tiết địa chỉ
+                    addressEntity.setAccount(newAccount);  // Liên kết địa chỉ với tài khoản
+                    return addressEntity;
+                })
+                .collect(Collectors.toList());
+
+        // Gán danh sách địa chỉ vào tài khoản
+        newAccount.setAddresses(addressEntities);
 
         accountRepository.save(newAccount); // Save new account
     }

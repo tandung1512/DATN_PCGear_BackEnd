@@ -2,7 +2,7 @@ package web.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,6 +27,8 @@ public class OrderServicelmpl implements OrderService {
     private AccountRepository accountRepository;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private InvoiceRepository invoiceRepository;
 
     
     @Override
@@ -36,48 +38,48 @@ public class OrderServicelmpl implements OrderService {
         // Chuyển đổi dữ liệu orderData thành đối tượng Invoice
         Invoice inv = mapper.convertValue(orderData, Invoice.class);
 
-        // Kiểm tra nếu có userId và tìm tài khoản người dùng
+        // Liên kết hóa đơn với user nếu có
         if (orderData.has("userId") && !orderData.get("userId").isNull()) {
             Account user = accountRepository.findById(orderData.get("userId").asText()).orElse(null);
             inv.setUser(user);
         }
 
-        // Lấy totalAmount từ frontend (orderData)
+        // Lấy tổng tiền từ frontend nếu có
         if (orderData.has("totalAmount") && !orderData.get("totalAmount").isNull()) {
-            double totalAmount = orderData.get("totalAmount").asDouble(); // Nhận giá trị từ frontend
-            inv.setTotalAmount(totalAmount); // Cập nhật tổng tiền vào hóa đơn
+            double totalAmount = orderData.get("totalAmount").asDouble();
+            inv.setTotalAmount(totalAmount);
         }
 
-        // Lưu thông tin hóa đơn vào DB
+        // Lưu hóa đơn vào DB
         dao.save(inv);
 
-        // Chuyển đổi dữ liệu items từ orderData thành List<DetailedInvoice>
-        TypeReference<List<DetailedInvoice>> type = new TypeReference<List<DetailedInvoice>>() {};
+        // Lấy danh sách sản phẩm từ itemsNode
         JsonNode itemsNode = orderData.get("detailedInvoices");
-
-        // Kiểm tra nếu items không phải là null và không rỗng
         if (itemsNode != null && !itemsNode.isNull()) {
-            List<DetailedInvoice> deList = mapper.convertValue(itemsNode, type);
+            for (JsonNode itemNode : itemsNode) {
+                // Chuyển đổi từng sản phẩm thành DetailedInvoice
+                DetailedInvoice detailedInvoice = mapper.convertValue(itemNode, DetailedInvoice.class);
 
-            if (deList != null && !deList.isEmpty()) {
-                for (DetailedInvoice d : deList) {
-                    d.setInvoice(inv); // Liên kết chi tiết hóa đơn với hóa đơn
+                // Liên kết hóa đơn với từng chi tiết hóa đơn
+                detailedInvoice.setInvoice(inv);
 
-                    // Lấy thông tin sản phẩm từ product trong JSON và ánh xạ vào đối tượng Product
-                    if (d.getProduct() != null && d.getProduct().getId() != null) {
-                        Product product = productRepository.findById(d.getProduct().getId())
-                                .orElseThrow(() -> new RuntimeException("Product not found"));
-                        d.setProduct(product); // Liên kết chi tiết hóa đơn với sản phẩm
-                    }
+                // Liên kết sản phẩm
+                Product product = productRepository.findById(detailedInvoice.getProduct().getId())
+                        .orElseThrow(() -> new RuntimeException("Product not found"));
+                detailedInvoice.setProduct(product);
+                System.out.println(orderData.toPrettyString());
 
-                    // Thêm phương thức thanh toán nếu có
-                    if (orderData.has("paymentMethod") && !orderData.get("paymentMethod").isNull()) {
-                        d.setPaymentMethod(orderData.get("paymentMethod").asText()); // Thêm phương thức thanh toán
-                    }
+                Optional<DetailedInvoice> existingDetail = ddao.findByInvoiceAndProduct(inv, detailedInvoice.getProduct());
+                if (existingDetail.isPresent()) {
+                    // Cập nhật số lượng nếu đã tồn tại
+                    DetailedInvoice detailToUpdate = existingDetail.get();
+                    detailToUpdate.setQuantity(detailToUpdate.getQuantity() + detailedInvoice.getQuantity());
+                    ddao.save(detailToUpdate);
+                } else {
+                    // Tạo mới nếu chưa tồn tại
+                    ddao.save(detailedInvoice);
                 }
 
-                // Lưu tất cả chi tiết hóa đơn vào DB
-                ddao.saveAll(deList);
             }
         }
 
@@ -87,28 +89,15 @@ public class OrderServicelmpl implements OrderService {
 
 
 
+
+
     @Override
     public Invoice findById(String id) {
-        return dao.findById(id).get();
+        return invoiceRepository.findById(id).orElse(null);
     }
 
     @Override
-    public List<Invoice> findByUsernameStatusPending(String username) {
-      return dao.findByUsernameStatusPending(username);
-    }
-
-    @Override
-    public List<Invoice> findByUsernameStatusDelivery(String username) {
-         return dao.findByUsernameStatusDelivery(username);
-    }
-
-    @Override
-    public List<Invoice> findByUsernameStatusComplete(String username) {
-       return dao.findByUsernameStatusComplete(username);
-    }
-
-    @Override
-    public List<Invoice> findByUsernameStatusCancelled(String username) {
-        return dao.findByUsernameStatusCancelled(username);
+    public List<Invoice> getInvoicesByUsernameAndStatus(String username, String status) {
+        return invoiceRepository.findByUsernameAndStatus(username, status);
     }
 }

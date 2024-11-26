@@ -21,13 +21,13 @@ public class DetailedInvoice {
     private Long id;
 
     private int quantity;
-
+    @Column(name = "payment_method")
     @JsonProperty("paymentMethod")
     private String paymentMethod;
 
     @ManyToOne
     @JoinColumn(name = "invoice_id", nullable = false)
-    @JsonBackReference // Chỉ ra rằng đây là tham chiếu ngược
+    @JsonBackReference
     private Invoice invoice;
 
     @ManyToOne

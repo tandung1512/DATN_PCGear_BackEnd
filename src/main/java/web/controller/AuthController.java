@@ -9,12 +9,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import web.model.Account;
+import web.model.Addresses;
 import web.model.LoginRequest;
 import web.model.responses.LoginResponse;
 import web.service.AccountService;
 import web.util.JwtUtil;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -34,21 +37,26 @@ public class AuthController {
         // Tìm kiếm tài khoản theo ID
         Optional<Account> accountOptional = accountService.findById(loginRequest.getId());
 
-        // Kiểm tra tài khoản tồn tại và mật khẩu đúng
         if (accountOptional.isPresent()) {
             Account account = accountOptional.get();
 
+            // Kiểm tra mật khẩu
             if (passwordEncoder.matches(loginRequest.getPassword(), account.getPassword())) {
-                // Tạo JWT token khi đăng nhập thành công
+                // Tạo JWT token
                 String token = jwtUtil.generateToken(account.getId());
 
-                // Tạo LoginResponse để trả về thông tin người dùng và token
+                // Chuyển đổi danh sách Addresses thành danh sách chuỗi
+                List<String> addressStrings = account.getAddresses().stream()
+                        .map(Addresses::getDetail) // Lấy thông tin địa chỉ từ đối tượng Addresses
+                        .collect(Collectors.toList());
+
+                // Tạo LoginResponse
                 LoginResponse response = new LoginResponse(
                         account.getId(),
                         account.getName(),
                         account.getPhone(),
                         account.getEmail(),
-                        account.getAddress(),
+                        addressStrings, // Truyền danh sách chuỗi địa chỉ
                         token
                 );
 
@@ -56,7 +64,7 @@ public class AuthController {
             }
         }
 
-        // Trả về thông báo lỗi nếu tài khoản không tồn tại hoặc mật khẩu không đúng
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid ID or Password");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
     }
+
 }
