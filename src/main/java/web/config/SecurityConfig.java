@@ -62,17 +62,11 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeRequests(auth -> auth
-                .requestMatchers("/api/auth/**","/api/accounts/register","/api/accounts/profile",
-<<<<<<< HEAD
-                		"/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                		"/api/products/*","/api/products","/api/products/images/**","/api/banners/images/**","/api/banners/**"
-=======
+                .requestMatchers("/api/auth/**","/api/accounts/register","/api/accounts/profile/**",
+                		"/api/products/*","/api/products","/api/products/images/**","/api/banners/images/**","/api/banners/**",
                 		"/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/api/categories/get/**","/api/categories/hot-with-products",
-
                 		"/api/products/get/**","/api/ghn/**",
                 		"/api/products/*","/api/products","/api/products/images/**","/api/products/hot","/api/categories/hot","/api/auth/login"
-
->>>>>>> branch 'master' of https://github.com/tandung1512/DATN_PCGear_BackEnd.git
                 		).permitAll()
                 .requestMatchers("/api/accounts/**", "/api/suppliers/**","/api/brands/**","/api/stock-receipts/**","/api/distinctives/**","/api/categories/**").hasRole("ADMIN")
 

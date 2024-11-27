@@ -225,34 +225,96 @@ public class AccountController {
         }
     }
     
-    @Operation(summary = "Get logged-in user profile", description = "Retrieve details of the currently logged-in user.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved user profile",
-                content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Account.class)) }),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - User is not logged in"),
-        @ApiResponse(responseCode = "404", description = "Profile not found")
-    })
-    @GetMapping("/profile")
-    public ResponseEntity<?> getProfile(Principal principal) {
+    @GetMapping("/profile/{id}")
+    public ResponseEntity<Account> getProfileById(
+            @Parameter(description = "ID of the account to be retrieved") @PathVariable String id) {
+        return accountService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    
+    @PutMapping("/profile/{id}")
+    public ResponseEntity<?> updateProfileById(
+            @PathVariable String id,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "password", required = false) String password,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "image", required = false) MultipartFile imageFile,
+            Principal principal) {
         try {
+            // Kiểm tra người dùng đã đăng nhập
             if (principal == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
             }
 
-            String userId = principal.getName();  // Giả sử ID người dùng là tên người dùng (principal)
-            
-            // Fetch account details with addresses
-            Optional<Account> accountOpt = accountService.findById(userId);
-            if (accountOpt.isPresent()) {
-                Account account = accountOpt.get();
-                return ResponseEntity.ok(account);  // Now, the account will have a list of addresses
-            } else {
+            String loggedInUserId = principal.getName();
+
+            // Kiểm tra quyền cập nhật hồ sơ
+            if (!loggedInUserId.equals(id)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("You are not allowed to update another user's profile");
+            }
+
+            // Tìm tài khoản trong cơ sở dữ liệu
+            Optional<Account> accountOpt = accountService.findById(id);
+            if (accountOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Profile not found");
             }
+
+            Account account = accountOpt.get();
+
+            // Cập nhật các trường thông tin
+            if (name != null && !name.isBlank()) {
+                account.setName(name);
+            }
+
+            if (password != null && !password.isBlank()) {
+                if (password.length() < 6) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Password must be at least 6 characters long");
+                }
+                account.setPassword(passwordEncoder.encode(password));
+            }
+
+            if (phone != null && !phone.isBlank()) {
+                if (!phone.matches("^[0-9]{10,11}$")) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid phone number format");
+                }
+                account.setPhone(phone);
+            }
+
+            if (email != null && !email.isBlank()) {
+                if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid email format");
+                }
+                account.setEmail(email);
+            }
+
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String fileName = imageFile.getOriginalFilename();
+                // TODO: Thêm logic lưu ảnh vào thư mục hoặc dịch vụ lưu trữ
+                account.setImage(fileName);
+            }
+
+            // Lưu thay đổi vào cơ sở dữ liệu
+            accountService.save(account);
+
+            // Trả về phản hồi thành công
+            return ResponseEntity.ok("Profile updated successfully");
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while fetching the profile");
+            // Log lỗi
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while updating the profile: " + e.getMessage());
         }
     }
+
+
+
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAccount(
