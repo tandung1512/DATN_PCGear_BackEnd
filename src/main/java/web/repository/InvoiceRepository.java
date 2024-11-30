@@ -1,6 +1,7 @@
 package web.repository;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,9 +18,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, String> {
 	@Query("SELECT new web.model.MonthlySalesStatistics(MONTH(i.orderDate), COUNT(*)) FROM Invoice i WHERE i.status = 'complete' AND YEAR(i.orderDate) = :year GROUP BY MONTH(i.orderDate)")
 	List<MonthlySalesStatistics> getMonthlySalesStatistics(@Param("year") int year);
 
-
 	@Query("SELECT new web.model.MonthlySalesStatistics(MONTH(i.orderDate), COUNT(*)) FROM Invoice i WHERE i.status = 'cancelled' AND YEAR(i.orderDate) = :year GROUP BY MONTH(i.orderDate)")
 	List<MonthlySalesStatistics> getMonthlySalesStatisticsbras(@Param("year") int year);
+
 //Lấy ra số năm hiện tại
 	@Query("SELECT DISTINCT YEAR(i.orderDate) FROM Invoice i")
 	List<Integer> findAllDistinctYears();
@@ -41,5 +42,17 @@ public interface InvoiceRepository extends JpaRepository<Invoice, String> {
 	@Query("SELECT i FROM Invoice i WHERE i.user.id = ?1 AND i.status = 'cancelled' "
 			+ "GROUP BY i.id, i.orderDate, i.address, i.status, i.user.id, i.node " + "ORDER BY i.orderDate DESC")
 	List<Invoice> findByUsernameStatusCancelled(String username);
+
+	@Query(value = """
+			    SELECT
+			        CONVERT(DATE, i.order_date) AS ngay,
+			        SUM(p.price * di.quantity) AS tongtiendaban
+			    FROM Invoices i
+			    JOIN detailed_invoices di ON i.id = di.invoice_id
+			    JOIN Products p ON di.product_id = p.id
+			    GROUP BY CONVERT(DATE, i.order_date)
+			    ORDER BY ngay
+			""", nativeQuery = true)
+	List<Map<String, Object>> getDailySales();
 
 }
