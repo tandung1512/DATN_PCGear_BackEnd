@@ -48,11 +48,11 @@ public class Invoice {
     @JoinColumn(name = "user_id")
     private Account user;
 
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
-    @JsonIgnore
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @JsonManagedReference
     private List<DetailedInvoice> detailedInvoices;
 
-    public String getStatusName() {
+    public String StatusName() {
         String statusName = "";
         switch (status) {
             case "pending":

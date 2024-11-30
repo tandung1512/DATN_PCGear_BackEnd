@@ -47,7 +47,7 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOriginPattern("*");
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
@@ -62,7 +62,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeRequests(auth -> auth
-                .requestMatchers("/api/auth/**","/api/accounts/register","/api/accounts/profile",
+                .requestMatchers("/api/auth/**","/api/accounts/register","/api/accounts/profile/**",
+                		"/api/products/*","/api/products","/api/products/images/**","/api/banners/images/**","/api/banners/**",
                 		"/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/api/categories/get/**","/api/categories/hot-with-products",
                 		"/api/products/get/**","/api/ghn/**",
                 		"/api/products/*","/api/products","/api/products/images/**","/api/products/hot","/api/categories/hot","/api/auth/login", "/api/statistics/**"

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
 import web.model.Account;
+import web.model.Addresses;
 import web.service.AccountService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +22,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Map;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -82,7 +84,7 @@ public class AccountController {
             @Parameter(description = "Password of the new account") @RequestParam String password,
             @Parameter(description = "Phone number of the account holder") @RequestParam String phone,
             @Parameter(description = "Email of the new account") @RequestParam String email,
-            @Parameter(description = "Address of the account holder") @RequestParam String address,
+            @Parameter(description = "Address of the account holder") @RequestParam List<String> addresses,
             @Parameter(description = "Profile image for the account", required = false) @RequestParam(value = "image", required = false) MultipartFile image) {
 
 
@@ -97,7 +99,7 @@ public class AccountController {
         
         try {
             String encodedPassword = passwordEncoder.encode(password);
-            accountService.registerAccount(id, name, encodedPassword, phone, email, address, image);
+            accountService.registerAccount(id, name, encodedPassword, phone, email,addresses, image);
             response.put("message", "Account registered successfully.");
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
@@ -121,7 +123,7 @@ public class AccountController {
             @RequestParam("password") String password,
             @RequestParam("phone") String phone,
             @RequestParam("email") String email,
-            @RequestParam("address") String address,
+            @RequestParam(value = "addresses") List<String> addresses, 
             @RequestParam(value = "image", required = false) MultipartFile image,
             @RequestParam("admin") boolean admin, // Keeping it as boolean
             @RequestParam(value = "status", defaultValue = "true") boolean status,
@@ -135,10 +137,18 @@ public class AccountController {
             account.setPassword(encodedPassword);
             account.setPhone(phone);
             account.setEmail(email);
-            account.setAddress(address);
+            
             account.setAdmin(admin); // Using the boolean value directly
             account.setStatus(status);
             account.setConfirm(confirm);
+            List<Addresses> addressList = new ArrayList<>();
+            for (String addressStr : addresses) {
+                Addresses address = new Addresses();
+                address.setDetail(addressStr);  // Giả sử đây là địa chỉ dưới dạng một chuỗi, bạn có thể mở rộng thành nhiều trường nếu cần
+                address.setAccount(account);
+                addressList.add(address);
+            }
+            account.setAddresses(addressList);
 
             if (image != null && !image.isEmpty()) {
                 String fileName = image.getOriginalFilename();
@@ -170,7 +180,7 @@ public class AccountController {
             @RequestParam(value = "password", required = false) String password,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "email", required = false) String email,
-            @RequestParam(value = "address", required = false) String address,
+            @RequestParam(value = "address", required = false) List<String> addresses,
             @RequestParam(value = "image", required = false) MultipartFile imageFile,
             @RequestParam(value = "admin", required = false) Boolean admin, // Keeping it as Boolean
             @RequestParam(value = "status", required = false) Boolean status) {
@@ -183,7 +193,17 @@ public class AccountController {
             if (password != null) existingAccount.setPassword(passwordEncoder.encode(password));
             if (phone != null) existingAccount.setPhone(phone);
             if (email != null) existingAccount.setEmail(email);
-            if (address != null) existingAccount.setAddress(address);
+            if (addresses != null && !addresses.isEmpty()) {
+                // Cập nhật danh sách địa chỉ
+                List<Addresses> addressList = new ArrayList<>();
+                for (String addressStr : addresses) {
+                    Addresses address = new Addresses();
+                    address.setDetail(addressStr);
+                    address.setAccount(existingAccount);
+                    addressList.add(address);
+                }
+                existingAccount.setAddresses(addressList);
+            }
             if (admin != null) existingAccount.setAdmin(admin); // Use the Boolean value directly
             if (status != null) existingAccount.setStatus(status);
 
@@ -205,42 +225,97 @@ public class AccountController {
         }
     }
     
-    @Operation(summary = "Get logged-in user profile", description = "Retrieve details of the currently logged-in user.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved user profile",
-                content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Account.class)) }),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - User is not logged in"),
-        @ApiResponse(responseCode = "404", description = "Profile not found")
-    })
-    @GetMapping("/profile")
-    public ResponseEntity<?> getProfile(Principal principal) {
+    @GetMapping("/profile/{id}")
+    public ResponseEntity<Account> getProfileById(
+            @Parameter(description = "ID of the account to be retrieved") @PathVariable String id) {
+        return accountService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    
+    @PutMapping("/profile/{id}")
+    public ResponseEntity<?> updateProfileById(
+            @PathVariable String id,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "password", required = false) String password,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "image", required = false) MultipartFile imageFile,
+            Principal principal) {
         try {
-            // Obtain the authenticated user's information, typically through the SecurityContexts
+            // Kiểm tra người dùng đã đăng nhập
             if (principal == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
             }
 
-            String userId = principal.getName(); // Assuming the user ID is the principal (username)
+            String loggedInUserId = principal.getName();
 
-            // Fetch account details using the accountService
-            Optional<Account> accountOpt = accountService.findById(userId);
-            if (accountOpt.isPresent()) {
-                return ResponseEntity.ok(accountOpt.get());
-            } else {
+            // Kiểm tra quyền cập nhật hồ sơ
+            if (!loggedInUserId.equals(id)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("You are not allowed to update another user's profile");
+            }
+
+            // Tìm tài khoản trong cơ sở dữ liệu
+            Optional<Account> accountOpt = accountService.findById(id);
+            if (accountOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Profile not found");
             }
+
+            Account account = accountOpt.get();
+
+            // Cập nhật các trường thông tin
+            if (name != null && !name.isBlank()) {
+                account.setName(name);
+            }
+
+            if (password != null && !password.isBlank()) {
+                if (password.length() < 6) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Password must be at least 6 characters long");
+                }
+                account.setPassword(passwordEncoder.encode(password));
+            }
+
+            if (phone != null && !phone.isBlank()) {
+                if (!phone.matches("^[0-9]{10,11}$")) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid phone number format");
+                }
+                account.setPhone(phone);
+            }
+
+            if (email != null && !email.isBlank()) {
+                if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid email format");
+                }
+                account.setEmail(email);
+            }
+
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String fileName = imageFile.getOriginalFilename();
+                // TODO: Thêm logic lưu ảnh vào thư mục hoặc dịch vụ lưu trữ
+                account.setImage(fileName);
+            }
+
+            // Lưu thay đổi vào cơ sở dữ liệu
+            accountService.save(account);
+
+            // Trả về phản hồi thành công
+            return ResponseEntity.ok("Profile updated successfully");
+
         } catch (Exception e) {
-            // Log the exception message for debugging (optional)
-            System.err.println("Error fetching user profile: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while fetching the profile");
+            // Log lỗi
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while updating the profile: " + e.getMessage());
         }
     }
 
-    @Operation(summary = "Delete account by ID", description = "Delete an account using its ID")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Account deleted successfully"),
-        @ApiResponse(responseCode = "404", description = "Account not found")
-    })
+
+
+
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAccount(
             @Parameter(description = "ID of the account to be deleted") @PathVariable String id) {
