@@ -11,7 +11,7 @@
 //    @Override
 //    public void addCorsMappings(CorsRegistry registry) {
 //        registry.addMapping("/api/**") // Đường dẫn API cần mở CORS
-//                .allowedOrigins("http://localhost:4200") // Nguồn gốc Angular
+//                .allowedOrigins("http://localhost:4201/") // Nguồn gốc Angular
 //                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
 //                .allowCredentials(true);
 //    }

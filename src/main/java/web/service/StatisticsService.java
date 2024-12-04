@@ -11,9 +11,14 @@ public class StatisticsService {
 	
 	@Autowired
 	InvoiceRepository invoiceRepository;
+
 	
-	public List<Map<String, Object>> getDailySales() {
-        return invoiceRepository.getDailySales();
+	public List<Map<String, Object>> getSalesByMonths(int month) {
+        return invoiceRepository.getMonthlySales(month);
+    }
+	
+	public List<Map<String, Object>> getSalesByYears() {
+        return invoiceRepository.getYearlySales();
     }
 }
 
