@@ -53,17 +53,15 @@ public class OrderServicelmpl implements OrderService {
         // Lưu hóa đơn vào DB
         dao.save(inv);
 
-        // Lấy danh sách sản phẩm từ itemsNode
+        
         JsonNode itemsNode = orderData.get("detailedInvoices");
         if (itemsNode != null && !itemsNode.isNull()) {
             for (JsonNode itemNode : itemsNode) {
-                // Chuyển đổi từng sản phẩm thành DetailedInvoice
+            
                 DetailedInvoice detailedInvoice = mapper.convertValue(itemNode, DetailedInvoice.class);
 
-                // Liên kết hóa đơn với từng chi tiết hóa đơn
+               
                 detailedInvoice.setInvoice(inv);
-
-                // Liên kết sản phẩm
                 Product product = productRepository.findById(detailedInvoice.getProduct().getId())
                         .orElseThrow(() -> new RuntimeException("Product not found"));
                 detailedInvoice.setProduct(product);
@@ -71,12 +69,14 @@ public class OrderServicelmpl implements OrderService {
 
                 Optional<DetailedInvoice> existingDetail = ddao.findByInvoiceAndProduct(inv, detailedInvoice.getProduct());
                 if (existingDetail.isPresent()) {
-                    // Cập nhật số lượng nếu đã tồn tại
+                   
                     DetailedInvoice detailToUpdate = existingDetail.get();
-                    detailToUpdate.setQuantity(detailToUpdate.getQuantity() + detailedInvoice.getQuantity());
-                    ddao.save(detailToUpdate);
+                    if (detailToUpdate.getQuantity() != detailedInvoice.getQuantity()) {
+                        detailToUpdate.setQuantity(detailedInvoice.getQuantity());
+                        ddao.save(detailToUpdate);
+                    }
                 } else {
-                    // Tạo mới nếu chưa tồn tại
+                   
                     ddao.save(detailedInvoice);
                 }
 

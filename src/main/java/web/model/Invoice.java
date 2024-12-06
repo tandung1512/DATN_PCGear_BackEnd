@@ -41,7 +41,7 @@ public class Invoice {
         }
     }
 
-    @Transient
+    @Column(name = "total_amount")
     private Double totalAmount;
 
     @ManyToOne
