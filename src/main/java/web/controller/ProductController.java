@@ -91,6 +91,11 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
+    @GetMapping("/search/item")
+    public List<Product> searchProducts(@RequestParam String name) {
+        // Tìm kiếm các sản phẩm có tên chứa từ khóa
+        return productRepository.findByNameContainingIgnoreCase(name);
+    }
     // Get product by ID
     @Operation(summary = "Get product by ID")
     @ApiResponses(value = {
