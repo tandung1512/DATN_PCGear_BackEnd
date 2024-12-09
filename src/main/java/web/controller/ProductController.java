@@ -269,7 +269,15 @@ public ResponseEntity<List<Product>> getHotProducts() {
             return ResponseEntity.status(500).body("Error deleting product: " + e.getMessage());
         }
     }
-
+    @PutMapping("/{id}/update-quantity")
+    public ResponseEntity<?> updateProductQuantity(@PathVariable String id, @RequestParam int quantity) {
+        try {
+            productService.updateQuantity(id, quantity);
+            return ResponseEntity.ok("Product quantity updated successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 
 
 

@@ -30,5 +30,6 @@ public interface ProductService {
 
     // Tìm sản phẩm nổi bật
     List<Product> getHotProducts();
+    void updateQuantity(String id, int quantity);
 }
 
