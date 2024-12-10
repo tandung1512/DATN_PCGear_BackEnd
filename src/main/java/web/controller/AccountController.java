@@ -233,7 +233,6 @@ public class AccountController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    
     @PutMapping("/profile/{id}")
     public ResponseEntity<?> updateProfileById(
             @PathVariable String id,
@@ -246,7 +245,7 @@ public class AccountController {
         try {
             // Kiểm tra người dùng đã đăng nhập
             if (principal == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(createResponse("error", "Unauthorized access"));
             }
 
             String loggedInUserId = principal.getName();
@@ -254,13 +253,13 @@ public class AccountController {
             // Kiểm tra quyền cập nhật hồ sơ
             if (!loggedInUserId.equals(id)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("You are not allowed to update another user's profile");
+                        .body(createResponse("error", "You are not allowed to update another user's profile"));
             }
 
             // Tìm tài khoản trong cơ sở dữ liệu
             Optional<Account> accountOpt = accountService.findById(id);
             if (accountOpt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Profile not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(createResponse("error", "Profile not found"));
             }
 
             Account account = accountOpt.get();
@@ -273,21 +272,23 @@ public class AccountController {
             if (password != null && !password.isBlank()) {
                 if (password.length() < 6) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body("Password must be at least 6 characters long");
+                            .body(createResponse("error", "Password must be at least 6 characters long"));
                 }
                 account.setPassword(passwordEncoder.encode(password));
             }
 
             if (phone != null && !phone.isBlank()) {
                 if (!phone.matches("^[0-9]{10,11}$")) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid phone number format");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(createResponse("error", "Invalid phone number format"));
                 }
                 account.setPhone(phone);
             }
 
             if (email != null && !email.isBlank()) {
                 if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid email format");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(createResponse("error", "Invalid email format"));
                 }
                 account.setEmail(email);
             }
@@ -302,14 +303,21 @@ public class AccountController {
             accountService.save(account);
 
             // Trả về phản hồi thành công
-            return ResponseEntity.ok("Profile updated successfully");
+            return ResponseEntity.ok(createResponse("success", "Profile updated successfully"));
 
         } catch (Exception e) {
             // Log lỗi
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while updating the profile: " + e.getMessage());
+                    .body(createResponse("error", "An error occurred while updating the profile: " + e.getMessage()));
         }
+    }
+
+    private Map<String, Object> createResponse(String status, String message) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", status);
+        response.put("message", message);
+        return response;
     }
 
 
