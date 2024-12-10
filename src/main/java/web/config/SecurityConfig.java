@@ -63,7 +63,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeRequests(auth -> auth
                 .requestMatchers("/api/auth/**","/api/accounts/register","/api/accounts/profile/**",
-                		"/api/products/*","/api/products","/api/products/images/**","/api/banners/images/**","/api/banners/**",
+                		"/api/products/**","/api/products","/api/products/images/**","/api/banners/images/**","/api/banners/**",
                 		"/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/api/categories/get/**","/api/categories/hot-with-products",
                 		"/api/products/get/**","/api/ghn/**","/api/products/search/**",
                 		"/api/products/*","/api/products","/api/products/images/**","/api/products/hot","/api/categories/hot","/api/auth/login", "/api/statistics/**"

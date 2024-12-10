@@ -106,4 +106,15 @@ public class ProductServiceImpl implements ProductService {  // Use 'implements'
     public List<Product> getHotProducts() {
         return productRepository.findByIsHotTrue(); // Gọi repository để lấy sản phẩm nổi bật
     }
+    public void updateQuantity(String productId, int quantity) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (product.getQuantity() < quantity) {
+            throw new RuntimeException("Not enough stock available");
+        }
+
+        product.setQuantity(product.getQuantity() - quantity);
+        productRepository.save(product);
+    }
 }
