@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  database:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=22112003Dung@
+    ports:
+      - "1433:1433"  # Cổng SQL Server
+    networks:
+      static-network:
+        ipv4_address: 192.168.100.220  # IP tĩnh cho SQL Server
+    volumes:
+      - sqlserver-data:/var/opt/mssql  # Để lưu trữ dữ liệu SQL
+
+  springapp:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Nếu bạn có Dockerfile riêng cho ứng dụng Spring Boot
+    depends_on:
+      - database
+    ports:
+      - "8080:8080"  # Cổng cho Spring Boot
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:sqlserver://sqlserver:1433;databaseName=pcgearhub;encrypt=true;trustServerCertificate=true
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=22112003Dung@
+    networks:
+      static-network:
+        ipv4_address: 192.168.100.221  # IP tĩnh cho Spring Boot
+
+networks:
+  static-network:
+    ipam:
+      config:
+        - subnet: 192.168.100.0/24
+          ip_range: 192.168.100.0/24  # Đặt phạm vi IP cho mạng tĩnh
+
+volumes:
+  sqlserver-data:
+    driver: local  # Đảm bảo dữ liệu được lưu khi container dừng
