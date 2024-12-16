@@ -33,4 +33,13 @@ public class StatisticsController {
         List<Map<String, Object>> salesData = statisticsService.getSalesByYears();
         return ResponseEntity.ok(salesData);
     }
+	
+	@GetMapping
+    public Map<String, Long> getStatistics() {
+        Map<String, Long> stats = new HashMap<>();
+        stats.put("productCount", statisticsService.getProductCount());
+        stats.put("userCount", statisticsService.getUserCount());
+        stats.put("categoryCount", statisticsService.getCategoryCount());
+        return stats;
+    }
 }
