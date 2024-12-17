@@ -84,7 +84,7 @@ public class AccountController {
             @Parameter(description = "Password of the new account") @RequestParam String password,
             @Parameter(description = "Phone number of the account holder") @RequestParam String phone,
             @Parameter(description = "Email of the new account") @RequestParam String email,
-            @Parameter(description = "Address of the account holder") @RequestParam List<String> addresses,
+//            @Parameter(description = "Address of the account holder") @RequestParam List<String> addresses,
             @Parameter(description = "Profile image for the account", required = false) @RequestParam(value = "image", required = false) MultipartFile image) {
 
 
@@ -99,7 +99,7 @@ public class AccountController {
         
         try {
             String encodedPassword = passwordEncoder.encode(password);
-            accountService.registerAccount(id, name, encodedPassword, phone, email,addresses, image);
+            accountService.registerAccount(id, name, encodedPassword, phone, email, image);
             response.put("message", "Account registered successfully.");
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
@@ -123,7 +123,7 @@ public class AccountController {
             @RequestParam("password") String password,
             @RequestParam("phone") String phone,
             @RequestParam("email") String email,
-            @RequestParam(value = "addresses") List<String> addresses, 
+//            @RequestParam(value = "addresses") List<String> addresses, 
             @RequestParam(value = "image", required = false) MultipartFile image,
             @RequestParam("admin") boolean admin, // Keeping it as boolean
             @RequestParam(value = "status", defaultValue = "true") boolean status,
@@ -141,14 +141,14 @@ public class AccountController {
             account.setAdmin(admin); // Using the boolean value directly
             account.setStatus(status);
             account.setConfirm(confirm);
-            List<Addresses> addressList = new ArrayList<>();
-            for (String addressStr : addresses) {
-                Addresses address = new Addresses();
-                address.setDetail(addressStr);  // Giả sử đây là địa chỉ dưới dạng một chuỗi, bạn có thể mở rộng thành nhiều trường nếu cần
-                address.setAccount(account);
-                addressList.add(address);
-            }
-            account.setAddresses(addressList);
+//            List<Addresses> addressList = new ArrayList<>();
+//            for (String addressStr : addresses) {
+//                Addresses address = new Addresses();
+//                address.setDetail(addressStr);  // Giả sử đây là địa chỉ dưới dạng một chuỗi, bạn có thể mở rộng thành nhiều trường nếu cần
+//                address.setAccount(account);
+//                addressList.add(address);
+//            }
+//            account.setAddresses(addressList);
 
             if (image != null && !image.isEmpty()) {
                 String fileName = image.getOriginalFilename();
@@ -180,7 +180,7 @@ public class AccountController {
             @RequestParam(value = "password", required = false) String password,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "email", required = false) String email,
-            @RequestParam(value = "address", required = false) List<String> addresses,
+//            @RequestParam(value = "address", required = false) List<String> addresses,
             @RequestParam(value = "image", required = false) MultipartFile imageFile,
             @RequestParam(value = "admin", required = false) Boolean admin, // Keeping it as Boolean
             @RequestParam(value = "status", required = false) Boolean status) {
@@ -193,17 +193,17 @@ public class AccountController {
             if (password != null) existingAccount.setPassword(passwordEncoder.encode(password));
             if (phone != null) existingAccount.setPhone(phone);
             if (email != null) existingAccount.setEmail(email);
-            if (addresses != null && !addresses.isEmpty()) {
-                // Cập nhật danh sách địa chỉ
-                List<Addresses> addressList = new ArrayList<>();
-                for (String addressStr : addresses) {
-                    Addresses address = new Addresses();
-                    address.setDetail(addressStr);
-                    address.setAccount(existingAccount);
-                    addressList.add(address);
-                }
-                existingAccount.setAddresses(addressList);
-            }
+//            if (addresses != null && !addresses.isEmpty()) {
+//                // Cập nhật danh sách địa chỉ
+//                List<Addresses> addressList = new ArrayList<>();
+//                for (String addressStr : addresses) {
+//                    Addresses address = new Addresses();
+//                    address.setDetail(addressStr);
+//                    address.setAccount(existingAccount);
+//                    addressList.add(address);
+//                }
+//                existingAccount.setAddresses(addressList);
+//            }
             if (admin != null) existingAccount.setAdmin(admin); // Use the Boolean value directly
             if (status != null) existingAccount.setStatus(status);
 
